@@ -7,62 +7,44 @@ function Gameboard() {
 
   const getBoard = () => board;
 
-  const markSquare = (player, row, col) => {
+  const markSquare = (row, col, player) => {
     if (board[row][col] === "") {
       board[row][col] = player.symbol;
     }
   }
-  
-  const checkRow = (row, player) => board[row].every((v) => v === player.symbol);
 
-  const checkCol = (col, player) => {
-    const arr = [
-      board[0][col],
-      board[1][col],
-      board[2][col]
-    ];
-    return arr.every((v) => v === player.symbol);
-  }
-
-  const checkLtr = (player) => {
-    const ltr = [board[0][0], board[1][1], board[2][2]];
-    return ltr.every((v) => v === player.symbol);
-  }
-
-  const checkRtl = (player) => {
-    const rtl = [board[2][0], board[1][1], board[0][2]];
-    return rtl.every((v) => v === player.symbol);
-  }
-
-  const checkWin = (row, col, player) => {
-    if (checkRow(row, player) || checkCol(col, player) || checkRtl(player) || checkLtr(player))
-        {
-      return true;
-    } else {
-      return false;
-    }
-  }
-
-  return { getBoard, markSquare, checkWin }
+  return { getBoard, markSquare }
 }
 
 function Player(name, symbol) {
-  return {
-    name: name,
-    symbol: symbol,
-    score: 0,
-    logPlayerInfo() {
-      return `${name}: ${symbol}`
+  let score = 0;
+  const addWin = (result) => {
+    if (result) {
+      score++
     }
   }
+
+  return { name, symbol, addWin }
 }
 
-const game = Gameboard();
-const board = game.getBoard();
+function Gameplay() {
+  const board = Gameboard().getBoard();
 
-const player1 = Player("player1", "X");
-const player2 = Player("player2", "O");
+  const player1 = Player("player 1", "X");
+  const player2 = Player("player 2", "O");
 
-game.markSquare(player1, 0, 2);
+  const checkRow = (row, player) => board[row].every((v) => v === player.symbol);
+  const checkCol = (col, player) => [board[0][col], board[1][col], board[2][col]].every((v) => v === player.symbol);
+  const checkLtr = (player) => [board[0][0], board[1][1], board[2][2]].every((v) => v === player.symbol);
+  const checkRtl = (player) => [board[2][0], board[1][1], board[0][2]].every((v) => v === player.symbol);
 
-console.log(board);
+  const checkWin = (row, col, player) => (checkRow(row, player) || checkCol(col, player) || checkLtr(player) || checkRtl(player));
+
+  const takeTurn = (row, col, player) => {
+    game.markSquare(row, col, player);
+    return game.checkWin(row, col, player);
+  }
+
+  return { board, player1, player2, checkWin, takeTurn }
+
+};
