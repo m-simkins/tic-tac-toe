@@ -16,7 +16,7 @@ function Gameboard() {
   return { getBoard, markSquare }
 }
 
-function Player(name, symbol) {
+function Player(symbol) {
   let score = 0;
 
   const addWin = (result) => {
@@ -25,7 +25,7 @@ function Player(name, symbol) {
     }
   }
 
-  return { name, symbol, score, addWin }
+  return { symbol, score, addWin }
 }
 
 function Gameplay() {
@@ -51,32 +51,67 @@ function Gameplay() {
 
 };
 
-function Interface() {
+function DisplayBoard() {
 
-  const buildBoard = () => {
-    const game = Gameplay();
-    const board = game.board;
-    const boardDisplay = document.getElementById("gameboard");
+  const game = Gameplay();
+  const boardData = game.board;
+  const boardDisplay = document.createElement("div");
+  boardDisplay.id = "gameboard";
   
-    for (let i = 0; i < board.length; i++) {
-      const rowDisplay = document.createElement("tr");
-      rowDisplay.id = `row${i}`;
-      boardDisplay.appendChild(rowDisplay);
-      for (let j = 0; j < board[i].length; j++) {
-        const cellDisplay = document.createElement("td");
-        cellDisplay.classList.add(`col${j}`);
-        cellDisplay.dataset.row = `${i}`;
-        cellDisplay.dataset.col = `${j}`;
-        rowDisplay.appendChild(cellDisplay);
-      }
+  for (let i = 0; i < boardData.length; i++) {
+    for (let j = 0; j < boardData.length; j++) {
+      const button = document.createElement("button");
+      button.classList.add("board-button");
+      button.style.gridArea = `${i + 1} / ${j + 1}`;
+      button.dataset.row = `${i}`;
+      button.dataset.col = `${j}`;
+      boardDisplay.appendChild(button);
     }
-    return boardDisplay;
   }
 
+  boardDisplay.addEventListener("click", (e) => {
+    const selection = e.target;
+    if (selection.classList.contains("board-button")) {
+      const arrRow = Number(selection.dataset.row);
+      const arrCol = Number(selection.dataset.col);
+      boardData[arrRow][arrCol] = "X";
+      selection.innerText = `${boardData[arrRow][arrCol]}`;
+      console.log(boardData);
+    }
+  });
 
+  return boardDisplay;
 
-  return { buildBoard }
-  
 }
 
-document.body.append(Interface().buildBoard());
+function PlayerInfoInput(player) {
+  const container = document.createElement("div");
+  const input = document.createElement("input");
+  input.type = "text";
+  input.name = "player-name";
+
+  input.addEventListener("keypress", (e) => {
+    if (e.key === "Enter") {
+      player.name = input.value;
+      input.value = "";
+      console.log(player);
+    }
+  })
+  container.append(input);
+  return container;
+}
+
+function startGame() {
+  const players = [Player("X"), Player("O")];
+
+  players.forEach(player => {
+    document.body.appendChild(PlayerInfoInput(player));
+  });
+  
+  // for (let i = 0; i < players.length; i++) {
+    // document.body.appendChild(PlayerInfo(players[i]));
+  // }
+
+}
+
+startGame();

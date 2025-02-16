@@ -4,31 +4,22 @@
   padding: 0;
 }
 
-table {
-  border-collapse: collapse;
+label {
+  display: none;
 }
 
-tr {
-  height: 100px;
+#gameboard {
+  display: grid;
+  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+  width: fit-content;
+  gap: 3px;
+  background-color: black;
 }
 
-td {
-  width: 100px;
-  border: 3px solid black
-}
-
-#row0 * {
-  border-top: none;
-}
-
-#row2 * {
-  border-bottom: none;
-}
-
-.col0 {
-  border-left: none;
-}
-
-.col2 {
-  border-right: none;
+.board-button {
+  min-width: 100px;
+  aspect-ratio: 1;
+  border: none;
+  background-color: firebrick;
+  font-size: 3rem;
 }
