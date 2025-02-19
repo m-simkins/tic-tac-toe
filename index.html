@@ -7,6 +7,25 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+  <div id="players-info-display">
+    <div id="player-1-display" class="player-display">
+      <h2 class="player-title">player 1</h2>
+      <label for="player-1-name-input" class="player-name-label">name:</label>
+      <input type="text" id="player-1-name-input" class="player-name-input" name="player-1-name">
+      <div id="player-1-mark" class="player-mark">X</div>
+    </div>
+    
+    <div id="player-2-display" class="player-display">
+      <h2 class="player-title">player 2</h2>
+      <label for="player-2-name-input" class="player-name-label">name:</label>
+      <input type="text" id="player-2-name-input" class="player-name-input" name="player-2-name">
+      <div id="player-2-mark" class="player-mark">O</div>
+    </div>
+  </div>
+
+  <button type="button" id="start-game-button">start game</button>
+
   <script src="script.js"></script>
 </body>
 </html>

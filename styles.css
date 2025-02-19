@@ -6,24 +6,24 @@
 
 body {
   background-color: #333;
+  width: 500px;
+  margin: 10vh auto 0;
 }
 
 label {
   display: none;
 }
 
-#gameboard {
-  display: grid;
-  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
-  width: fit-content;
-  gap: 3px;
-  background-color: black;
+#players-info-display {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
 }
 
-.board-button {
-  min-width: 100px;
+#board {
+  display: grid;
+  width: 100%;
+  padding: 5vw;
   aspect-ratio: 1;
-  border: none;
-  background-color: firebrick;
-  font-size: 3rem;
+  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
 }
