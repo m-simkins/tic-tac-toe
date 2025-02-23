@@ -1,25 +1,59 @@
 :root {
   --game-width: 300px;
-  --symbol-size: 3rem;
+  --symbol-size: 3.5rem;
 }
 
 * {
   box-sizing: border-box;
   margin: 0;
   padding: 0;
+  font-family: sans-serif;
 }
 
 body {
   background-color: #333;
 }
 
+#display-container {
+  margin: 0 auto;
+  width: var(--game-width);
+  display: flex;
+  justify-content: space-evenly;
+}
+
+.player-display {
+  width: calc(var(--game-width) / 2);
+}
+
+#player1-display {
+  background-color: #666;
+}
+
+#player2-display {
+  background-color: #999;
+}
+
 label {
   display: none;
 }
 
+.name-input {
+  width: 80%;
+  margin-top: 10px;
+  margin-left: 10%;
+  font-size: 1.2rem;
+  text-align: center;
+}
+
+.player-mark {
+  font-size: var(--symbol-size);
+  text-align: center;
+  margin: 10px auto;
+}
+
 #board {
   width: var(--game-width);
-  margin: 0 auto;
+  margin: 50px auto 0;
   display: grid;
   grid-template: repeat(3, 1fr) / repeat(3, 1fr);
 }
@@ -27,4 +61,12 @@ label {
 .square {
   aspect-ratio: 1;
   font-size: var(--symbol-size);
+}
+
+#prompts {
+  color: #ccc;
+  width: var(--game-width);
+  margin: 0 auto;
+  text-align: center;
+  padding: 10px;
 }

@@ -7,28 +7,30 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <div id="info-display">
-    <div id="player1-display" class="player-info-display">
-      <label for="player1-name-input">player 1 name: </label>
-      <input type="text" name="player1-name-input" id="player1-name-input">
-      <div id="player1-mark" class="player-mark">X</div>
-    </div>
-    <div id="player2-display" class="player-info-display">
-      <label for="player2-name-input">player 2 name: </label>
-      <input type="text" name="player2-name-input" id="player2-name-input">
-      <div id="player2-mark" class="player-mark">O</div>
-    </div>
-  </div>
   <div id="board">
     <button type="button" data-row="0" data-col="0" class="square"></button>
     <button type="button" data-row="0" data-col="1" class="square"></button>
     <button type="button" data-row="0" data-col="2" class="square"></button>
-    <button type="button" data-row="1" data-col="0" class="square"></button>
+    <button type="button" data-row="1" data-col="0" class="square">O</button>
     <button type="button" data-row="1" data-col="0" class="square"></button>
     <button type="button" data-row="1" data-col="0" class="square"></button>
     <button type="button" data-row="2" data-col="0" class="square"></button>
     <button type="button" data-row="2" data-col="0" class="square"></button>
-    <button type="button" data-row="2" data-col="2" class="square"></button>
+    <button type="button" data-row="2" data-col="2" class="square">X</button>
+  </div>
+  <div id="prompts">sample text</div>
+  <div id="display-container">
+    <div id="player1-display" class="player-display">
+      <label for="player1-name-input">player 1 name: </label>
+      <input type="text" name="player1-name-input" id="player1-name-input"
+      class="name-input">
+      <div id="player1-mark" class="player-mark">X</div>
+    </div>
+    <div id="player2-display" class="player-display">
+      <label for="player2-name-input">player 2 name: </label>
+      <input type="text" name="player2-name-input" id="player2-name-input" class="name-input">
+      <div id="player2-mark" class="player-mark">O</div>
+    </div>
   </div>
   <script src="script.js"></script>
 </body>
