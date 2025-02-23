@@ -92,6 +92,7 @@ const interface = (function() {
       }
     }
   }
+
   return { displayBoard }
 })();
 
