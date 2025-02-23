@@ -5,7 +5,7 @@ function Player(mark, name) {
   return { getMark, setName, getName };
 }
 
-const board = (function() {
+const gameboard = (function() {
   const board = [];
   for (let i = 0; i < 3; i++) {
     const row = [];
@@ -19,22 +19,22 @@ const board = (function() {
   return { getBoard };
 })();  
 
-const game = (function() {
+function game() {
   const player1 = Player("X","");
   const player2 = Player("O","");
+  const board = gameboard.getBoard();
   let activePlayer;
   let turnCount = 0;
 
   function startGame() {
-    player1.setName(prompt("player 1 name"));
-    player2.setName(prompt("player 2 name"));
+    interface.displayBoard();
     activePlayer = player1;
-    console.table(board.getBoard());
+    console.table(board);
     console.log(`it's ${activePlayer.getName()}'s turn`);
   };
 
   function pickSquare(row, col) {
-    const square = board.getBoard()[row][col];
+    const square = board[row][col];
     if (square = " ") {
       resolveTurn(row, col);
     } else if (square = activePlayer.getMark()) {
@@ -42,12 +42,12 @@ const game = (function() {
     } else {
       console.log("your opponent is already here");
     }
-  }
+  };
 
   function resolveTurn(row, col) {
-    board.getBoard()[row][col] = activePlayer.getMark();
+    board[row][col] = activePlayer.getMark();
     turnCount++;
-    console.table(board.getBoard());
+    console.table(board);
 
     if (checkWin(row, col, activePlayer)) {
       console.log(`${activePlayer.getName()} wins!`);
@@ -61,11 +61,10 @@ const game = (function() {
   };
 
   function checkWin(row, col, player) {
-    const b = board.getBoard();
-    const thisRow = b[row];
-    const thisCol = [b[0][col], b[1][col], b[2][col]];
-    const ltr = [b[0][0], b[1][1], b[2][2]];
-    const rtl = [b[0][2], b[1][1], b[2][0]];
+    const thisRow = board[row];
+    const thisCol = [board[0][col], board[1][col], board[2][col]];
+    const ltr = [board[0][0], board[1][1], board[2][2]];
+    const rtl = [board[0][2], board[1][1], board[2][0]];
     const lines = [thisRow, thisCol, ltr, rtl];
     for (let i = 0; i < lines.length; i++) {
       if (lines[i].every(square => square === player.getMark())) {
@@ -76,6 +75,24 @@ const game = (function() {
 
   return { startGame, pickSquare }
 
+};
+
+const interface = (function() {
+  function displayBoard() {
+    const board = gameboard.getBoard();
+    const boardDiv = document.getElementById("board");
+    for (let i = 0; i < board.length; i++) {
+      for (let j = 0; j < board[i].length; j++) {        
+        const button = document.createElement("button");
+        button.type = "button";
+        button.classList.add("square");
+        button.dataset.row = `${i}`;
+        button.dataset.col = `${j}`;
+        boardDiv.appendChild(button);
+      }
+    }
+  }
+  return { displayBoard }
 })();
 
-game.startGame();
+game().startGame();
