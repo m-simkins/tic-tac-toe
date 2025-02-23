@@ -17,7 +17,7 @@ const gameboard = (function() {
   }  
   const getBoard = () => board;
   return { getBoard };
-})();  
+})();
 
 function game() {
   const player1 = Player("X","");
@@ -27,10 +27,11 @@ function game() {
   let turnCount = 0;
 
   function startGame() {
-    interface.displayBoard();
+    interface.initDisplay();
     activePlayer = player1;
+    interface.displayPrompt(`${activePlayer.getName()}'s turn`);
     console.table(board);
-    console.log(`it's ${activePlayer.getName()}'s turn`);
+    console.log(`${activePlayer.getName()}'s turn`);
   };
 
   function pickSquare(row, col) {
@@ -77,23 +78,4 @@ function game() {
 
 };
 
-const interface = (function() {
-  function displayBoard() {
-    const board = gameboard.getBoard();
-    const boardDiv = document.getElementById("board");
-    for (let i = 0; i < board.length; i++) {
-      for (let j = 0; j < board[i].length; j++) {        
-        const button = document.createElement("button");
-        button.type = "button";
-        button.classList.add("square");
-        button.dataset.row = `${i}`;
-        button.dataset.col = `${j}`;
-        boardDiv.appendChild(button);
-      }
-    }
-  }
-
-  return { displayBoard }
-})();
-
-game().startGame();
+document.getElementById("start-game-button").addEventListener("click", game().startGame);
