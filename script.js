@@ -1,3 +1,10 @@
+function Player(mark, name) {
+  const getMark = () => mark;
+  const setName = (newName) => name = newName;
+  const getName = () => name;
+  return { getMark, setName, getName };
+}
+
 const board = (function() {
   const board = [];
   for (let i = 0; i < 3; i++) {
@@ -5,19 +12,12 @@ const board = (function() {
       for (let j = 0; j < 3; j++) {
         const square = " ";
         row.push(square);
-      }
-    board.push(row);
-  }
+      }  
+    board.push(row);  
+  }  
   const getBoard = () => board;
   return { getBoard };
-})();
-
-function Player(mark, name) {
-  const getMark = () => mark;
-  const setName = (newName) => name = newName;
-  const getName = () => name;
-  return { getMark, setName, getName };
-}
+})();  
 
 const game = (function() {
   const player1 = Player("X","");
@@ -33,10 +33,22 @@ const game = (function() {
     console.log(`it's ${activePlayer.getName()}'s turn`);
   };
 
-  function takeTurn(row, col) {
+  function pickSquare(row, col) {
+    const square = board.getBoard()[row][col];
+    if (square = " ") {
+      resolveTurn(row, col);
+    } else if (square = activePlayer.getMark()) {
+      console.log("you're already here");
+    } else {
+      console.log("your opponent is already here");
+    }
+  }
+
+  function resolveTurn(row, col) {
     board.getBoard()[row][col] = activePlayer.getMark();
     turnCount++;
-    console.table(board.getBoard());    
+    console.table(board.getBoard());
+
     if (checkWin(row, col, activePlayer)) {
       console.log(`${activePlayer.getName()} wins!`);
     } else if (turnCount === 9) {
@@ -45,6 +57,7 @@ const game = (function() {
       activePlayer = activePlayer === player1 ? player2 : player1;
       console.log(`it's ${activePlayer.getName()}'s turn`);
     }
+
   };
 
   function checkWin(row, col, player) {
@@ -61,7 +74,7 @@ const game = (function() {
     }
   };
 
-  return { startGame, takeTurn }
+  return { startGame, pickSquare }
 
 })();
 
