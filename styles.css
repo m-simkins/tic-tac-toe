@@ -1,3 +1,8 @@
+:root {
+  --game-width: 300px;
+  --symbol-size: 3rem;
+}
+
 * {
   box-sizing: border-box;
   margin: 0;
@@ -6,4 +11,20 @@
 
 body {
   background-color: #333;
+}
+
+label {
+  display: none;
+}
+
+#board {
+  width: var(--game-width);
+  margin: 0 auto;
+  display: grid;
+  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
+}
+
+.square {
+  aspect-ratio: 1;
+  font-size: var(--symbol-size);
 }
