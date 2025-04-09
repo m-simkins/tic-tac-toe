@@ -7,6 +7,36 @@
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
+
+  <h1>tic-tac-toe</h1>
+
+  <div id="players">
+    <div id="playerX-info" class="player-info">
+      <div id="playerX-name" class="player-name">player X</div>
+      <div id="playerX-points" class="player-points"></div>
+    </div>
+    <div id="playerO-info" class="player-info">
+      <div id="playerO-name" class="player-name">player O</div>
+      <div id="playerO-points" class="player-points"></div>
+    </div>
+  </div>
+
+  <div id="turn"></div>
+  
+  <div id="board">
+    <button type="button" data-row="0" data-col="0"></button>
+    <button type="button" data-row="0" data-col="1"></button>
+    <button type="button" data-row="0" data-col="2"></button>
+    <button type="button" data-row="1" data-col="0"></button>
+    <button type="button" data-row="1" data-col="1"></button>
+    <button type="button" data-row="1" data-col="2"></button>
+    <button type="button" data-row="2" data-col="0"></button>
+    <button type="button" data-row="2" data-col="1"></button>
+    <button type="button" data-row="2" data-col="2"></button>
+  </div>
+
+  <div id="message"></div>
+
   <script src="script.js"></script>
 </body>
 </html>

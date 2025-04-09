@@ -5,29 +5,21 @@ function Player(mark) {
   const getPoints = () => points;
   return { getMark, addPoint, getPoints };
 };
-
 function Gameboard() {
   const board = [
     [" "," "," "],
     [" "," "," "],
     [" "," "," "]
   ]
-
   const getBoard = () => board;
-
-  const getLines = (x, y) => {
-
-    const row = board[x];
-    const col = [board[0][y], board[1][y], board[2][y]];  
-    const diagLtr = [board[0][0], board[1][1], board[2][2]];
-    const diagRtl = [board[0][2], board[1][1], board[2][0]];
-
-    return [row, col, diagLtr, diagRtl]
-
-  }
+  const getLines = (x, y) => [
+    board[x],
+    [board[0][y], board[1][y], board[2][y]],
+    [board[0][0], board[1][1], board[2][2]],
+    [board[0][2], board[1][1], board[2][0]]
+  ]
   
   const markSquare = (x, y, mark) => board[x][y] = mark;
-  
   const clearBoard = () => {
     for (let row = 0; row < board.length; row++) {
       for (let col = 0; col < board[row].length; col++) {
@@ -35,25 +27,20 @@ function Gameboard() {
       }
     }
   }
-
   return { getBoard, getLines, markSquare, clearBoard };
 };
 
 function Gameplay() {
-
   const board = Gameboard();
   const playerX = Player("X");
   const playerO = Player("O");
-
   let activePlayer = playerX;
   let turnsTaken = 0;
-  let message;
-
-  const getActivePlayer = () => activePlayer;
+  let message = "choose a square to start the game";
   const getBoard = () => board.getBoard();
-  const getPlayers = () => [playerX, playerO];
+  const getActiveMark = () => activePlayer.getMark();
   const getMessage = () => message;
-
+  const getPoints = () => [playerX.getPoints(), playerO.getPoints()];
   const takeTurn = (row, col) => {
     if (board.getBoard()[row][col] === " ") {
       board.markSquare(row, col, activePlayer.getMark());
@@ -90,6 +77,31 @@ function Gameplay() {
     }
     return checks.findIndex((check) => check === true) !== -1;
   }
-
-  return { getActivePlayer, getBoard, getPlayers, getMessage, takeTurn }
+  return { getBoard, getActiveMark, getMessage, getPoints, takeTurn }
 };
+
+(function display() {
+
+  const game = Gameplay();
+
+  function refreshDisplay() {    
+    document.getElementById("turn").innerText = `${game.getActiveMark()}'s turn`;
+    document.getElementById("message").innerText = `${game.getMessage()}`;
+    document.getElementById("playerX-points").innerText = `${game.getPoints()[0]}`;
+    document.getElementById("playerO-points").innerText = `${game.getPoints()[1]}`;
+  }
+
+  refreshDisplay();
+
+  document.getElementById("board").addEventListener("click", (e) => {
+    const row = e.target.dataset.row;
+    const col = e.target.dataset.col;
+    const board = e.target.parentElement.children;
+    game.takeTurn(row, col);
+    Array.from(board).forEach(square => {
+      square.innerText = game.getBoard()[square.dataset.row][square.dataset.col]
+    });
+    refreshDisplay();
+  })
+
+})();
