@@ -1,5 +1,5 @@
 :root {
-  --game-width: 300px;
+  --game-width: 400px;
   --symbol-size: 3.5rem;
 }
 
@@ -16,23 +16,4 @@ body {
   width: var(--game-width);
   margin: 0 auto;
   font-size: 1.2rem;
-}
-
-#players {
-  display: flex;
-  flex-direction: row;
-  width: 100%;
-  justify-content: space-around;
-}
-
-#board {
-  width: var(--game-width);
-  aspect-ratio: 1;
-  margin: 0 auto;
-  display: grid;
-  grid-template: repeat(3, 1fr) / repeat(3, 1fr);
-}
-
-#board * {
-  font-size: 4rem;
 }

@@ -1,107 +1,88 @@
-function Player(mark) {
+function Player(name, mark) {
   let points = 0;
+  const getName = () => name;
   const getMark = () => mark;
   const addPoint = () => points++;
+  const clearPoints = () => points = 0;
   const getPoints = () => points;
-  return { getMark, addPoint, getPoints };
-};
-function Gameboard() {
-  const board = [
-    [" "," "," "],
-    [" "," "," "],
-    [" "," "," "]
-  ]
-  const getBoard = () => board;
-  const getLines = (x, y) => [
-    board[x],
-    [board[0][y], board[1][y], board[2][y]],
-    [board[0][0], board[1][1], board[2][2]],
-    [board[0][2], board[1][1], board[2][0]]
-  ]
-  
-  const markSquare = (x, y, mark) => board[x][y] = mark;
-  const clearBoard = () => {
-    for (let row = 0; row < board.length; row++) {
-      for (let col = 0; col < board[row].length; col++) {
-        board[row][col] = " ";
-      }
-    }
-  }
-  return { getBoard, getLines, markSquare, clearBoard };
+  return { getName, getMark, addPoint, clearPoints, getPoints };
 };
 
-function Gameplay() {
-  const board = Gameboard();
-  const playerX = Player("X");
-  const playerO = Player("O");
-  let activePlayer = playerX;
-  let turnsTaken = 0;
-  let message = "choose a square to start the game";
-  const getBoard = () => board.getBoard();
-  const getActiveMark = () => activePlayer.getMark();
-  const getMessage = () => message;
-  const getPoints = () => [playerX.getPoints(), playerO.getPoints()];
-  const takeTurn = (row, col) => {
-    if (board.getBoard()[row][col] === " ") {
-      board.markSquare(row, col, activePlayer.getMark());
-      turnsTaken++;
-      if (isAWinner(row, col)) {
-        activePlayer.addPoint();
-        message = `${activePlayer.getMark()} won the round! choose a square to play again`;
-        resetRound();
-      } else if (turnsTaken === 9) {
-        message = "you tied! choose a square to play again";
-        resetRound();
-      } else {
-        message = "";
-      }
-      activePlayer === playerX ? activePlayer = playerO : activePlayer = playerX;
-    } else {
-      message = "invalid move! try again"
+function Board() {
+  const board = [];
+  const buildBoard = (size) => {
+    for (let i = 0; i < size; i++) {
+      const row = [];
+      for (let j = 0; j < size; j++) row.push(" ");
+      board.push(row);
     }
   };
-
-  function resetRound() {
-    turnsTaken = 0;
-    board.clearBoard();
-  }
-
-  function isAWinner(row, col) {
-    const checks = [];
-    for (const line of board.getLines(row, col)) {
-      if (line.every((square) => square === activePlayer.getMark())) {
-        checks.push(true);
-      } else {
-        checks.push(false);
-      }
+  const getBoard = () => board;
+  const markBoard = (x, y, mark) => board[x][y] = mark;
+  const clearBoard = () => {
+    for (let x = 0; x < board.length; x++) {
+      for (let y = 0; y < board.length; y++) board[x][y] = " ";
     }
-    return checks.findIndex((check) => check === true) !== -1;
-  }
-  return { getBoard, getActiveMark, getMessage, getPoints, takeTurn }
+  };
+  const getLines = (x, y) => {
+    const col = [];
+    const ltr = [];
+    const rtl = [];
+    for (let i = 0; i < board.length; i++) {
+      col.push(board[i][y]);
+      ltr.push(board[i][i]);
+      rtl.push(board[i][board.length - 1 - i]);
+    }
+    return [board[x], col, ltr, rtl];
+  };
+  return { buildBoard, getBoard, markBoard, clearBoard, getLines };
 };
 
-(function display() {
-
-  const game = Gameplay();
-
-  function refreshDisplay() {    
-    document.getElementById("turn").innerText = `${game.getActiveMark()}'s turn`;
-    document.getElementById("message").innerText = `${game.getMessage()}`;
-    document.getElementById("playerX-points").innerText = `${game.getPoints()[0]}`;
-    document.getElementById("playerO-points").innerText = `${game.getPoints()[1]}`;
+function Game() {
+  const board = Board();
+  const getBoard = () => board;
+  const players = [];
+  const getPlayers = () => players;
+  const addPlayer = (name, mark) => players.push(Player(name, mark));
+  let activePlayer;
+  const getActivePlayer = () => activePlayer;
+  let turnResult;
+  const getTurnResult = () => turnResult;
+  const startGame = (size) => {
+    players.forEach((player) => player.clearPoints());
+    board.buildBoard(size);
+    activePlayer = players[0];
   }
-
-  refreshDisplay();
-
-  document.getElementById("board").addEventListener("click", (e) => {
-    const row = e.target.dataset.row;
-    const col = e.target.dataset.col;
-    const board = e.target.parentElement.children;
-    game.takeTurn(row, col);
-    Array.from(board).forEach(square => {
-      square.innerText = game.getBoard()[square.dataset.row][square.dataset.col]
-    });
-    refreshDisplay();
-  })
-
-})();
+  const takeTurn = (x, y) => {
+    if (turnResult === "win" || turnResult === "draw") board.clearBoard();
+    if (board.getBoard()[x][y] === " ") {
+      board.markBoard(x, y, activePlayer.getMark());
+      if (checkWin(x, y)) {
+        activePlayer.addPoint();
+        turnResult = "win";
+      } else if (checkDraw()) {
+        turnResult = "draw";
+      } else {
+        turnResult = "";
+      }
+      switchActivePlayer();
+    } else {
+      turnResult = "invalid";
+    }
+  }
+  function checkWin(x, y) {
+    const checks = [];
+    board.getLines(x, y).forEach((line) => checks.push(line.every((mark) => mark === activePlayer.getMark())))
+    return checks.indexOf(true) !== -1
+  }
+  function checkDraw() {
+    const checks = [];
+    board.getBoard().forEach((row) => checks.push(row.every((mark) => mark !== " ")));
+    return checks.every((check) => check === true);
+  }
+  function switchActivePlayer() {
+    const index = players.indexOf(activePlayer)
+    activePlayer = index < players.length - 1 ? players[index + 1] : players[0];
+  }
+  return { getBoard, getPlayers, addPlayer, getActivePlayer, getTurnResult, startGame, takeTurn }
+}
