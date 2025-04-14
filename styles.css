@@ -1,5 +1,5 @@
 :root {
-  --game-width: 400px;
+  --board-width: 300px;
   --symbol-size: 3.5rem;
 }
 
@@ -13,7 +13,28 @@
 
 body {
   background-color: #333;
-  width: var(--game-width);
+  width: calc(var(--board-width) + 200px);
   margin: 0 auto;
   font-size: 1.2rem;
+}
+
+#setup, #players {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-evenly;
+}
+
+.player-name-input-card, .player-info-card {
+  display: flex;
+  flex-direction: column;
+}
+
+#board {
+  width: var(--board-width);
+  margin: 0 auto;
+}
+
+.board-button {
+  width: 100%;
+  aspect-ratio: 1;
 }

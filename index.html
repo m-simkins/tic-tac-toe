@@ -3,17 +3,21 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>tic-tac-toe</title>
+  <title>games with friends</title>
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
-  <h1>tic-tac-toe</h1>
+  <h1>games with friends</h1>
   <div id="setup">
-    <label for="player-count">how many players?</label>
-    <input type="number" name="player-count" id="player-count" min="2">
-    <label for="board-size">how many rows?</label>
-    <input type="number" name="board-size" id="board-size" min="3">
+    <select name="game" id="game-selector">
+      <option value="">choose game</option>
+      <option value="tic-tac-toe">tic-tac-toe</option>
+    </select>
+    <button type="button" id="start-game-button" disabled>start game</button>
   </div>
+  <div id="players"></div>
+  <div id="message"></div>
+  <div id="board"></div>
   <script src="script.js"></script>
 </body>
 </html>
