@@ -101,29 +101,29 @@ function ticTacToe() {
 
 function State() {
   const defaultGame = ticTacToe();
-  let game = defaultGame;
-
-  const players = [];
   const defaultMarks = defaultGame.getDefaultMarks();
-
-  const board = game.getBoard();
+  const players = [];
+  let game = defaultGame;
   let turnResult = "";
   let activePlayer;
+
   function changeActivePlayer() {
-    const index = players.indexOf(activePlayer);
+    const i = players.indexOf(activePlayer);
     activePlayer.toggleActive();
-    activePlayer = index === players.length - 1 ? players[0] : players[index + 1];
+    activePlayer = i === players.length - 1 ? players[0] : players[i + 1];
     activePlayer.toggleActive();
-  };
+  }
+
   function setDefaultPlayers() {
     defaultMarks.forEach((mark) => {
       const player = Player();
       player.setName(`player ${mark}`);
       player.setMark(mark);
       players.push(player);
-    });  
+    });
+    activePlayer = players[0];
   };
-  const message = game.getMessage();
+
   function startNextTurn() {
     changeActivePlayer();
     game.setMessage(`it's ${activePlayer.getName()}'s turn`);
@@ -133,36 +133,39 @@ function State() {
   return {
     getPlayers: () => players,
     addPlayer: (player) => players.push(player),
+    getActivePlayer: () => activePlayer,
     getGame: () => game,
     setGame: (chosenGame) => game = chosenGame,
-    getBoard: () => board,
+    getBoard: game.getBoard,
     getTurnResult: () => turnResult,
-    getMessage: () => message,
+    getMessage: game.getMessage,
     initDefaultState: () => {
       game = defaultGame;
       setDefaultPlayers();
       game.buildBoard(players);
-      players[0].toggleActive();
-      activePlayer = players[0];
       game.setMessage(`it's ${activePlayer.getName()}'s turn`);
     },
     takeTurn: (row, col) => {
       turnResult = game.takeTurn(row, col, activePlayer);
       if (turnResult === "") startNextTurn();
-      console.log(board, game.getMessage());
     },
     startNewRound: () => {
       game.clearBoard();
       startNextTurn();
-    }
+    },
   }
 };
 
-// (() => {
+(() => {
   const state = State();
   state.initDefaultState();
-  state.takeTurn(1,1);
   state.takeTurn(0,0);
+  state.takeTurn(1,1);
+  state.takeTurn(0,1);
+  state.takeTurn(0,2);
   state.takeTurn(1,0);
+  state.takeTurn(2,0);
+  console.log(state.getMessage());
+  console.log(state.getBoard());
 
-// })();
+})();
