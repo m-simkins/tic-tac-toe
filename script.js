@@ -18,7 +18,7 @@ function SquareBoard() {
   const buildBoard = (size) => {
     for (let i = 0; i < size; i++) {
       const row = [];
-      for (let j = 0; j < size; j++) row.push(" ");
+      for (let j = 0; j < size; j++) row.push("");
       board.push(row);
     }
   };
@@ -26,7 +26,7 @@ function SquareBoard() {
   const markBoard = (x, y, mark) => board[x][y] = mark;
   const clearBoard = () => {
     for (let x = 0; x < board.length; x++) {
-      for (let y = 0; y < board.length; y++) board[x][y] = " ";
+      for (let y = 0; y < board.length; y++) board[x][y] = "";
     }
   };
   return { buildBoard, getBoard, markBoard, clearBoard };
@@ -38,10 +38,12 @@ function State() {
   const addPlayer = (player) => players.push(player);
   const getPlayers = () => players;
   
-  let activePlayer;
+  let activePlayer = players[0];
   const getActivePlayer = () => activePlayer;
+  const setActivePlayer = (player) => activePlayer = player;
   const switchActivePlayer = () => {
-    if (players.indexOf(activePlayer) < players.length - 1) {
+    const index = players.indexOf(activePlayer)
+    if (index < players.length - 1) {
       activePlayer = players[index + 1];
     } else {
       activePlayer = players[0];
@@ -56,6 +58,7 @@ function State() {
     addPlayer,
     getPlayers,
     getActivePlayer,
+    setActivePlayer,
     switchActivePlayer,
     setTurnResult,
     getTurnResult
@@ -66,7 +69,6 @@ function ticTacToe() {
 
   const state = State();
   const board = SquareBoard();
-  const activePlayer = state.getActivePlayer();
 
   const setUpGame = () => {
     const marks = ["X", "O"];
@@ -77,49 +79,53 @@ function ticTacToe() {
       player.clearPoints();
     });
     board.buildBoard(state.getPlayers().length + 1);
+    state.setActivePlayer(state.getPlayers()[0]);
   };
 
   const takeTurn = (x, y) => {
-    const turnResult = state.getTurnResult();
-    if (turnResult === "win" || turnResult === "draw") state.clearBoard();
-    if (boardState[x][y] === " ") {
-      boardState.markBoard(x, y, activePlayer.getMark());
+    if (board.getBoard()[x][y] === "") {
+      board.markBoard(x, y, state.getActivePlayer().getMark());
       if (checkWin(x, y)) {
-        activePlayer.addPoint();
+        state.getActivePlayer().gainPoint();
         state.setTurnResult("win");
       } else if (checkDraw()) {
         state.setTurnResult("draw");
       } else {
         state.setTurnResult("");
+        state.switchActivePlayer();
       }
-      state.switchActivePlayer();
     } else {
       state.setTurnResult("invalid");
     }
   }
 
+  const startNewRound = () => {
+    board.clearBoard();
+    state.setTurnResult("");
+    state.switchActivePlayer();
+  }
+
   function checkWin(x, y) {
-    const row = board[x];
+    const row = board.getBoard()[x];
     const col = [];
     const ltr = [];
     const rtl = [];
-    for (let i = 0; i < board.length; i++) {
-      col.push(board[i][y]);
-      ltr.push(board[i][i]);
-      rtl.push(board[i][board.length - 1 - i]);
+    for (let i = 0; i < board.getBoard().length; i++) {
+      col.push(board.getBoard()[i][y]);
+      ltr.push(board.getBoard()[i][i]);
+      rtl.push(board.getBoard()[i][board.getBoard().length - 1 - i]);
     }
     const lines = [row, col, ltr, rtl];
     const checks = [];
     lines.forEach((line) => {
-      console.log(line);
-      checks.push(line.every((mark) => mark === activePlayer.getMark()));
+      checks.push(line.every((mark) => mark === state.getActivePlayer().getMark()));
     })
     return checks.indexOf(true) !== -1
   }
 
   function checkDraw() {
     const checks = [];
-    board.forEach((row) => checks.push(row.every((mark) => mark !== " ")));
+    board.getBoard().forEach((row) => checks.push(row.every((mark) => mark !== "")));
     return checks.every((check) => check === true);
   }
 
@@ -130,8 +136,11 @@ function ticTacToe() {
     getPlayers: state.getPlayers,
     addPlayer: state.addPlayer,
     getTurnResult: state.getTurnResult,
+    getActivePlayer: state.getActivePlayer,
+    setActivePlayer: state.setActivePlayer,
     setUpGame,
-    takeTurn
+    takeTurn,
+    startNewRound
   }
 };
 
@@ -159,7 +168,8 @@ function Elements() {
     const mark = document.createElement("p");
     mark.innerText = `${player.getMark()}`;
     const points = document.createElement("p");
-    points.innerText = `points: ${player.getPoints()}`;
+    points.classList.add("points-display");
+    points.innerText = `${player.getPoints()}`;
     card.append(name, mark, points);
     return card;
   };
@@ -175,7 +185,6 @@ function Elements() {
         button.dataset.col = `${j}`;
         button.innerText = board[i][j];
         button.classList.add("board-button");
-        button.disabled = true;
         container.append(button);
       }
     }
@@ -193,13 +202,76 @@ function Elements() {
   document.getElementById("start-game-button").addEventListener("click", startGame);
 
   function startGame() {
-    const boardButtons = document.getElementsByClassName("board-button");
-    const nameInputs = document.getElementsByClassName("player-name-input");
     const playerInfoDisplay = document.getElementById("players");
-    for (let i = 0; i < boardButtons.length; i++) boardButtons[i].disabled = false;
+    const nameInputs = document.getElementsByClassName("player-name-input");
     for (let i = 0; i < nameInputs.length; i++) game.getPlayers()[i].setName(nameInputs[i].value);
     playerInfoDisplay.innerHTML = "";
     game.getPlayers().forEach(player => playerInfoDisplay.append(Elements().PlayerInfoCard(player)));
+    buildBoard();
+    setMessage();
+  }
+
+  function buildBoard() {
+    const boardContainer = document.getElementById("board");
+    const board = Elements().BoardContainer(game.getBoard());
+    boardContainer.append(board);
+    board.addEventListener("click", takeTurn);
+  }
+
+  function takeTurn(e) {
+    const row = e.target.dataset.row;
+    const col = e.target.dataset.col;
+    game.takeTurn(row, col);
+    e.target.innerText = game.getBoard()[row][col];
+    setMessage();
+    if (game.getTurnResult() === "win" || game.getTurnResult() === "draw") setUpRestart();
+  }
+
+  function setUpRestart() {
+    const scoreDisplays = document.getElementsByClassName("points-display");
+    for (let i = 0; i < game.getPlayers().length; i++) {
+      scoreDisplays[i].innerText = `${game.getPlayers()[i].getPoints()}`;
+    }
+    
+    const boardButtons = document.getElementsByClassName("board-button");
+    for (let i = 0; i < boardButtons.length; i++) {
+      boardButtons[i].disabled = true;
+    }
+
+    const playAgainButton = document.createElement("button");
+    playAgainButton.id = "play-again-button"
+    playAgainButton.innerText = "play again";
+    document.getElementById("setup").append(playAgainButton);
+    playAgainButton.addEventListener("click", playAnotherRound);
+  }
+
+  function playAnotherRound() {
+    const boardButtons = document.getElementsByClassName("board-button");
+    for (let i = 0; i < boardButtons.length; i++) {
+      boardButtons[i].innerText = "";
+      boardButtons[i].disabled = false;
+    }
+    game.startNewRound();
+    setMessage();
+    document.getElementById("play-again-button").remove();
+  }
+
+  function setMessage() {
+    let message;
+    switch (game.getTurnResult()) {
+      case "win":
+        message = `${game.getActivePlayer().getName()} wins`
+        break;
+      case "draw":
+        message = "it's a draw"
+        break;
+      case "invalid":
+        message = "you can't do that! try again"
+      default:
+        message = `it's ${game.getActivePlayer().getName()}'s turn`
+        break;
+    }
+    document.getElementById("message").innerText = message;
   }
 
   function selectGame(e) {
@@ -211,16 +283,16 @@ function Elements() {
         break;
     }
     game.setUpGame();
-    setUpDisplay();
+    setUpPlayerNameInput();
   }
-
-  function setUpDisplay() {
+  
+  function setUpPlayerNameInput() {
     for (let i = 0; i < game.getPlayers().length; i++) document.getElementById("players").append(Elements().PlayerInfoInputCard(i));
-    document.getElementById("board").append(Elements().BoardContainer(game.getBoard()));
+
     const nameInputs = document.getElementsByClassName("player-name-input");
     for (let i = 0; i < nameInputs.length; i++) {
       nameInputs[i].addEventListener("blur", checkForAllNames);
-      nameInputs[i].addEventListener("keydown", setEnterFocus);
+      nameInputs[i].addEventListener("keyup", setEnterFocus);
     };
   }
 
@@ -235,6 +307,7 @@ function Elements() {
     if (e.key === "Enter") {
       if (document.getElementById("players").lastElementChild === e.target.parentElement) {
         e.target.blur();
+        document.getElementById("start-game-button").focus();
       } else {
         const inputs = document.getElementsByClassName("player-name-input")
         const index = Array.from(inputs).indexOf(e.target);

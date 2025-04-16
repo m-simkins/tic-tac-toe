@@ -38,3 +38,7 @@ body {
   width: 100%;
   aspect-ratio: 1;
 }
+
+.points-display:before {
+  content: "points: ";
+}
