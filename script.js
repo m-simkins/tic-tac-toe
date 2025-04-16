@@ -15,17 +15,17 @@ function Player() {
 
 function Board() {
   const board = [];
-  const buildBoard = (rows, cols) => {
-    for (let i = 0; i < rows; i++) {
-      const row = [];
-      for (let j = 0; j < cols; j++) row.push("");
-      board.push(row);
-    }
-  };
   return {
-    buildBoard,
+    buildBoard: (rows, cols) => {
+      if (!cols) cols = rows;
+      console.log(rows, cols);
+      for (let i = 0; i < rows; i++) {
+        const row = [];
+        for (let j = 0; j < cols; j++) row.push("");
+        board.push(row);
+      }
+    },
     getBoard: () => board,
-    buildSquareBoard: (size) => buildBoard(size, size),
     markBoard: (x, y, mark) => board[x][y] = mark,
     clearBoard: () => {
       for (let x = 0; x < board.length; x++) {
@@ -196,127 +196,127 @@ function Elements() {
   return { PlayerInfoInputCard, PlayerInfoCard, BoardContainer }
 };
 
-(() => {
+// (() => {
 
-  let game;
+//   let game;
 
-  document.getElementById("game-selector").addEventListener("change", selectGame);
+//   document.getElementById("game-selector").addEventListener("change", selectGame);
 
-  document.getElementById("start-game-button").addEventListener("click", startGame);
+//   document.getElementById("start-game-button").addEventListener("click", startGame);
 
-  function startGame() {
-    const playerInfoDisplay = document.getElementById("players");
-    const nameInputs = document.getElementsByClassName("name-input");
-    for (let i = 0; i < nameInputs.length; i++) game.getPlayers()[i].setName(nameInputs[i].value);
-    playerInfoDisplay.innerHTML = "";
-    game.getPlayers().forEach(player => playerInfoDisplay.append(Elements().PlayerInfoCard(player)));
-    buildBoard();
-    setMessage();
-  }
+//   function startGame() {
+//     const playerInfoDisplay = document.getElementById("players");
+//     const nameInputs = document.getElementsByClassName("name-input");
+//     for (let i = 0; i < nameInputs.length; i++) game.getPlayers()[i].setName(nameInputs[i].value);
+//     playerInfoDisplay.innerHTML = "";
+//     game.getPlayers().forEach(player => playerInfoDisplay.append(Elements().PlayerInfoCard(player)));
+//     buildBoard();
+//     setMessage();
+//   }
 
-  function buildBoard() {
-    const boardContainer = document.getElementById("board");
-    const board = Elements().BoardContainer(game.getBoard());
-    boardContainer.append(board);
-    board.addEventListener("click", takeTurn);
-  }
+//   function buildBoard() {
+//     const boardContainer = document.getElementById("board");
+//     const board = Elements().BoardContainer(game.getBoard());
+//     boardContainer.append(board);
+//     board.addEventListener("click", takeTurn);
+//   }
 
-  function takeTurn(e) {
-    const row = e.target.dataset.row;
-    const col = e.target.dataset.col;
-    game.takeTurn(row, col);
-    e.target.innerText = game.getBoard()[row][col];
-    setMessage();
-    if (game.getTurnResult() === "win" || game.getTurnResult() === "draw") setUpRestart();
-  }
+//   function takeTurn(e) {
+//     const row = e.target.dataset.row;
+//     const col = e.target.dataset.col;
+//     game.takeTurn(row, col);
+//     e.target.innerText = game.getBoard()[row][col];
+//     setMessage();
+//     if (game.getTurnResult() === "win" || game.getTurnResult() === "draw") setUpRestart();
+//   }
 
-  function setUpRestart() {
-    const scoreDisplays = document.getElementsByClassName("points-display");
-    for (let i = 0; i < game.getPlayers().length; i++) {
-      scoreDisplays[i].innerText = `${game.getPlayers()[i].getPoints()}`;
-    }
+//   function setUpRestart() {
+//     const scoreDisplays = document.getElementsByClassName("points-display");
+//     for (let i = 0; i < game.getPlayers().length; i++) {
+//       scoreDisplays[i].innerText = `${game.getPlayers()[i].getPoints()}`;
+//     }
     
-    const boardButtons = document.getElementsByClassName("board-button");
-    for (let i = 0; i < boardButtons.length; i++) {
-      boardButtons[i].disabled = true;
-    }
+//     const boardButtons = document.getElementsByClassName("board-button");
+//     for (let i = 0; i < boardButtons.length; i++) {
+//       boardButtons[i].disabled = true;
+//     }
 
-    const playAgainButton = document.createElement("button");
-    playAgainButton.id = "play-again-button"
-    playAgainButton.innerText = "play again";
-    document.getElementById("setup").append(playAgainButton);
-    playAgainButton.addEventListener("click", playAnotherRound);
-  }
+//     const playAgainButton = document.createElement("button");
+//     playAgainButton.id = "play-again-button"
+//     playAgainButton.innerText = "play again";
+//     document.getElementById("setup").append(playAgainButton);
+//     playAgainButton.addEventListener("click", playAnotherRound);
+//   }
 
-  function playAnotherRound() {
-    const boardButtons = document.getElementsByClassName("board-button");
-    for (let i = 0; i < boardButtons.length; i++) {
-      boardButtons[i].innerText = "";
-      boardButtons[i].disabled = false;
-    }
-    game.startNewRound();
-    setMessage();
-    document.getElementById("play-again-button").remove();
-  }
+//   function playAnotherRound() {
+//     const boardButtons = document.getElementsByClassName("board-button");
+//     for (let i = 0; i < boardButtons.length; i++) {
+//       boardButtons[i].innerText = "";
+//       boardButtons[i].disabled = false;
+//     }
+//     game.startNewRound();
+//     setMessage();
+//     document.getElementById("play-again-button").remove();
+//   }
 
-  function setMessage() {
-    let message;
-    switch (game.getTurnResult()) {
-      case "win":
-        message = `${game.getActivePlayer().getName()} wins`
-        break;
-      case "draw":
-        message = "it's a draw"
-        break;
-      case "invalid":
-        message = "you can't do that! try again"
-      default:
-        message = `it's ${game.getActivePlayer().getName()}'s turn`
-        break;
-    }
-    document.getElementById("message").innerText = message;
-  }
+//   function setMessage() {
+//     let message;
+//     switch (game.getTurnResult()) {
+//       case "win":
+//         message = `${game.getActivePlayer().getName()} wins`
+//         break;
+//       case "draw":
+//         message = "it's a draw"
+//         break;
+//       case "invalid":
+//         message = "you can't do that! try again"
+//       default:
+//         message = `it's ${game.getActivePlayer().getName()}'s turn`
+//         break;
+//     }
+//     document.getElementById("message").innerText = message;
+//   }
 
-  function selectGame(e) {
-    switch (e.target.value) {
-      case "tic-tac-toe":
-        game = ticTacToe();
-        break;
-      default:
-        break;
-    }
-    game.setUpGame();
-    setUpPlayerNameInput();
-  }
+//   function selectGame(e) {
+//     switch (e.target.value) {
+//       case "tic-tac-toe":
+//         game = ticTacToe();
+//         break;
+//       default:
+//         break;
+//     }
+//     game.setUpGame();
+//     setUpPlayerNameInput();
+//   }
   
-  function setUpPlayerNameInput() {
-    for (let i = 0; i < game.getPlayers().length; i++) document.getElementById("players").append(Elements().PlayerInfoInputCard(i));
+//   function setUpPlayerNameInput() {
+//     for (let i = 0; i < game.getPlayers().length; i++) document.getElementById("players").append(Elements().PlayerInfoInputCard(i));
 
-    const nameInputs = document.getElementsByClassName("name-input");
-    for (let i = 0; i < nameInputs.length; i++) {
-      nameInputs[i].addEventListener("blur", checkForAllNames);
-      nameInputs[i].addEventListener("keyup", setEnterFocus);
-    };
-  }
+//     const nameInputs = document.getElementsByClassName("name-input");
+//     for (let i = 0; i < nameInputs.length; i++) {
+//       nameInputs[i].addEventListener("blur", checkForAllNames);
+//       nameInputs[i].addEventListener("keyup", setEnterFocus);
+//     };
+//   }
 
-  function checkForAllNames() {
-    const names = [];
-    const inputs = document.getElementsByClassName("name-input");
-    for (let i = 0; i < inputs.length; i++) names.push(inputs[i].value);
-    if (names.every(name => name !== "")) document.getElementById("start-game-button").disabled = false;
-  }
+//   function checkForAllNames() {
+//     const names = [];
+//     const inputs = document.getElementsByClassName("name-input");
+//     for (let i = 0; i < inputs.length; i++) names.push(inputs[i].value);
+//     if (names.every(name => name !== "")) document.getElementById("start-game-button").disabled = false;
+//   }
 
-  function setEnterFocus(e) {
-    if (e.key === "Enter") {
-      if (document.getElementById("players").lastElementChild === e.target.parentElement) {
-        e.target.blur();
-        document.getElementById("start-game-button").focus();
-      } else {
-        const inputs = document.getElementsByClassName("name-input")
-        const index = Array.from(inputs).indexOf(e.target);
-        inputs[index + 1].focus();
-      }
-    }
-  }
+//   function setEnterFocus(e) {
+//     if (e.key === "Enter") {
+//       if (document.getElementById("players").lastElementChild === e.target.parentElement) {
+//         e.target.blur();
+//         document.getElementById("start-game-button").focus();
+//       } else {
+//         const inputs = document.getElementsByClassName("name-input")
+//         const index = Array.from(inputs).indexOf(e.target);
+//         inputs[index + 1].focus();
+//       }
+//     }
+//   }
 
-})();
+// })();
