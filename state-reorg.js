@@ -1,18 +1,22 @@
 function Player() {
 
-  let name;
-  let mark;
-  let points;
+  const player = {
+    name: "",
+    mark: "",
+    points: 0
+  }
 
   return {
-    setName: (newName) => name = newName,
-    getName: () => name,
-    setMark: (newMark) => mark = newMark,
-    getMark: () => mark,
-    clearPoints: () => points = 0,
-    addPoint: () => points++,
-    losePoint: () => points--,
-    getPoints: () => points };
+    setName: (newName) => player.name = newName,
+    getName: () => player.name,
+    setMark: (newMark) => player.mark = newMark,
+    getMark: () => player.mark,
+    clearPoints: () => player.points = 0,
+    addPoint: () => player.points++,
+    losePoint: () => player.points--,
+    getPoints: () => player.points,
+    getInfoKeys : () => (Object.keys(player))
+  }
 };
 
 function Board() {
@@ -144,3 +148,75 @@ function ticTacToe(state) {
   }
 };
 
+
+function Elements() {
+
+  const InputLabelPair = (inputName) => {
+    const label = document.createElement("label");
+    label.classList.add(`${inputName}-label`);
+    label.innerText = `${inputName}`;
+    const input = document.createElement("input");
+    input.classList.add(`${inputName}-input`);
+    input.name = `${inputName}`;
+    return {label, input}
+  }
+
+  const PlayerInfoInputCard = (i) => {
+    const card = document.createElement("div");
+    card.classList.add("info-input-card");
+    card.id = `${i}-info-input-card`;
+    const info = ["name", "mark"];
+    for (let j = 0; j < info.length; j++) {
+      const pair = InputLabelPair(info[j]);
+      pair.label.htmlFor = `${i}-${info[j]}-input`;
+      pair.input.id = `${i}-${info[j]}-input`;
+      switch (info[j]) {
+        case "name":
+          pair.input.maxLength = 10;
+          break;
+        case "mark":
+          pair.input.maxLength = 1;
+          break;
+        default:
+          break;
+      }
+      card.append(pair.label, pair.input);
+    }
+    return card;
+  };
+
+  const PlayerInfoDisplayCard = (player) => {
+    const card = document.createElement("div");
+    const info = ["name", "mark", "points"];
+    const name = document.createElement("p");
+    name.innerText = `${player.getName()}`;
+    const mark = document.createElement("p");
+    mark.innerText = `${player.getMark()}`;
+    const points = document.createElement("p");
+    points.classList.add("points-display");
+    points.innerText = `${player.getPoints()}`;
+    card.append(name, mark, points);
+    return card;
+  };
+
+  const BoardContainer = (board) => {
+    const rowCount = board.length;
+    const colCount = board[0].length;
+    const container = document.createElement("div");
+    container.style.display = "grid";
+    container.style.gridTemplate = `repeat(${rowCount}, 1fr) / repeat(${colCount}, 1fr)`;
+    for (let i = 0; i < rowCount; i++) {
+      for (let j = 0; j < colCount; j++) {
+        const button = document.createElement("button");
+        button.dataset.row = `${i}`;
+        button.dataset.col = `${j}`;
+        button.innerText = board[i][j];
+        button.classList.add("board-button");
+        container.append(button);
+      }
+    }
+    return container;
+  };
+  
+  return { PlayerInfoInputCard, PlayerInfoDisplayCard, BoardContainer }
+};
