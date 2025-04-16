@@ -11,7 +11,6 @@ function Player() {
     getPoints: () => player.points,
     isActive: () => player.active,
     toggleActive: () => player.active = !player.active,
-    getPlayerKeys: () => (Object.keys(player)),
     getInputKeys: () => {
       const strings = [];
       for (const [key, value] of Object.entries(player)) {        
