@@ -1,92 +1,75 @@
 function Player() {
   let name;
-  const setName = (newName) => name = newName;
-  const getName = () => name;
   let mark;
-  const setMark = (newMark) => mark = newMark;
-  const getMark = () => mark;
   let points;
-  const clearPoints = () => points = 0;
-  const gainPoint = () => points++;
-  const losePoint = () => points--;
-  const getPoints = () => points;
-  return { setName, getName, setMark, getMark, clearPoints, gainPoint, losePoint, getPoints };
+  return {
+    setName: (newName) => name = newName,
+    getName: () => name,
+    setMark: (newMark) => mark = newMark,
+    getMark: () => mark,
+    clearPoints: () => points = 0,
+    addPoint: () => points++,
+    losePoint: () => points--,
+    getPoints: () => points };
 };
 
-function SquareBoard() {
+function Board() {
   const board = [];
-  const buildBoard = (size) => {
-    for (let i = 0; i < size; i++) {
+  const buildBoard = (rows, cols) => {
+    for (let i = 0; i < rows; i++) {
       const row = [];
-      for (let j = 0; j < size; j++) row.push("");
+      for (let j = 0; j < cols; j++) row.push("");
       board.push(row);
     }
   };
-  const getBoard = () => board;
-  const markBoard = (x, y, mark) => board[x][y] = mark;
-  const clearBoard = () => {
-    for (let x = 0; x < board.length; x++) {
-      for (let y = 0; y < board.length; y++) board[x][y] = "";
+  return {
+    buildBoard,
+    getBoard: () => board,
+    buildSquareBoard: (size) => buildBoard(size, size),
+    markBoard: (x, y, mark) => board[x][y] = mark,
+    clearBoard: () => {
+      for (let x = 0; x < board.length; x++) {
+        for (let y = 0; y < board[x].length; y++) board[x][y] = "";
+      }
     }
   };
-  return { buildBoard, getBoard, markBoard, clearBoard };
 };
 
 function State() {
 
   const players = [];
-  const addPlayer = (player) => players.push(player);
-  const getPlayers = () => players;
-  
   let activePlayer = players[0];
-  const getActivePlayer = () => activePlayer;
-  const setActivePlayer = (player) => activePlayer = player;
-  const switchActivePlayer = () => {
-    const index = players.indexOf(activePlayer)
-    if (index < players.length - 1) {
-      activePlayer = players[index + 1];
-    } else {
-      activePlayer = players[0];
-    };
-  };
-
   let turnResult;
-  const getTurnResult = () => turnResult;
-  const setTurnResult = (result) => turnResult = result;
 
   return {
-    addPlayer,
-    getPlayers,
-    getActivePlayer,
-    setActivePlayer,
-    switchActivePlayer,
-    setTurnResult,
-    getTurnResult
+    getPlayers: () => players,
+    addPlayer: (player) => players.push(player),
+    getActivePlayer: () => activePlayer,
+    setActivePlayer: (player) => activePlayer = player,
+    switchActivePlayer: () => {
+      const index = players.indexOf(activePlayer)
+      if (index === players.length - 1) {
+        activePlayer = players[0];
+      } else {
+        activePlayer = players[index + 1];
+      };
+    },
+    getTurnResult: () => turnResult,
+    setTurnResult: (result) => turnResult = result
   }
 };
 
 function ticTacToe() {
 
   const state = State();
-  const board = SquareBoard();
-
-  const setUpGame = () => {
-    const marks = ["X", "O"];
-    marks.forEach(mark => {
-      const player = Player();
-      state.addPlayer(player);
-      player.setMark(mark);
-      player.clearPoints();
-    });
-    board.buildBoard(state.getPlayers().length + 1);
-    state.setActivePlayer(state.getPlayers()[0]);
-  };
-
-  const takeTurn = (x, y) => {
-    if (board.getBoard()[x][y] === "") {
-      board.markBoard(x, y, state.getActivePlayer().getMark());
-      if (checkWin(x, y)) {
-        state.getActivePlayer().gainPoint();
+  const board = Board();
+  
+  const takeTurn = (row, col) => {
+    const activePlayer = state.getActivePlayer();
+    if (board.getBoard()[row][col] === "") {
+      board.markBoard(row, col, activePlayer.getMark());
+      if (checkWin(row, col)) {
+        activePlayer.addPoint();
         state.setTurnResult("win");
       } else if (checkDraw()) {
         state.setTurnResult("draw");
@@ -138,7 +121,17 @@ function ticTacToe() {
     getTurnResult: state.getTurnResult,
     getActivePlayer: state.getActivePlayer,
     setActivePlayer: state.setActivePlayer,
-    setUpGame,
+    setUpGame: () => {
+      const marks = ["X", "O"];
+      marks.forEach(mark => {
+        const player = Player();
+        state.addPlayer(player);
+        player.setMark(mark);
+        player.clearPoints();
+      });
+      board.buildSquareBoard(state.getPlayers().length + 1);
+      state.setActivePlayer(state.getPlayers()[0]);
+    },
     takeTurn,
     startNewRound
   }
@@ -175,11 +168,13 @@ function Elements() {
   };
 
   const BoardContainer = (board) => {
+    const rowCount = board.length;
+    const colCount = board[0].length;
     const container = document.createElement("div");
     container.style.display = "grid";
-    container.style.gridTemplateColumns = `repeat(${board.length}, 1fr)`;
-    for (let i = 0; i < board.length; i++) {
-      for (let j = 0; j < board.length; j++) {
+    container.style.gridTemplate = `repeat(${rowCount}, 1fr) / repeat(${colCount}, 1fr)`;
+    for (let i = 0; i < rowCount; i++) {
+      for (let j = 0; j < colCount; j++) {
         const button = document.createElement("button");
         button.dataset.row = `${i}`;
         button.dataset.col = `${j}`;
@@ -190,7 +185,8 @@ function Elements() {
     }
     return container;
   };
-  return { PlayerInfoInputCard, BoardContainer, PlayerInfoCard }
+  
+  return { PlayerInfoInputCard, PlayerInfoCard, BoardContainer }
 };
 
 (() => {
