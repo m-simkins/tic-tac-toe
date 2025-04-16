@@ -12,13 +12,25 @@ function Player() {
     isActive: () => player.active,
     toggleActive: () => player.active = !player.active,
     getPlayerKeys: () => (Object.keys(player)),
+    getInputKeys: () => {
+      const strings = [];
+      for (const [key, value] of Object.entries(player)) {        
+        if (typeof value === "string") strings.push(key);
+      };
+      return strings;
+    },
+    getDisplayKeys: () => {
+      const keys = [];
+      for (const [key, value] of Object.entries(player)) {
+        if (typeof value === "string" || typeof value === "number") keys.push(key);
+      }
+      return keys;
+    }
   }
 };
 
 function Board() {
-
   const board = [];
-  
   return {
     buildBoard: (rows, cols) => {
       if (!cols) cols = rows;
@@ -36,18 +48,15 @@ function Board() {
         for (let j = 0; j < board[i].length; j++) newRow.push("");
         board.shift();
         board.push(newRow);        
-      }
+      };
     }
   };
 };
 
 function ticTacToe() {
-
   const defaultMarks = ["X", "O"];
   const board = Board();
   let message;
-
-  const isAValidMove = (row, col) => board.getBoard()[row][col] === "";
   function resolveTurn(row, col, player) {
     if (playerWinsRound(row, col, player)) {
       player.addPoint();
@@ -81,14 +90,13 @@ function ticTacToe() {
     board.getBoard().forEach((row) => checks.push(row.every((mark) => mark !== "")));
     return checks.every((check) => check === true);
   };
-
   return {
     getDefaultMarks: () => defaultMarks,
     getBoard: board.getBoard,
     clearBoard: board.clearBoard,
     buildBoard: (players) => board.buildBoard(players.length + 1),
     takeTurn: (row, col, player) => {
-      if (isAValidMove(row, col)) {
+      if (board.getBoard()[row][col] === "") {
         board.markBoard(row, col, player.getMark());
         return resolveTurn(row, col, player);
       } else {
@@ -157,16 +165,100 @@ function State() {
   }
 };
 
+function Elements() {
+  const LabelInputPair = (inputName) => {
+    const label = document.createElement("label");
+    label.classList.add(`${inputName}-label`);
+    label.innerText = `${inputName}`;
+    const input = document.createElement("input");
+    input.classList.add(`${inputName}-input`, "player-info-input");
+    input.name = `${inputName}`;
+    return { label, input };
+  }
+
+  const PlayerInfoInputCard = (inputKeys, playerIndex) => {
+    const card = document.createElement("div");
+    card.classList.add("player-info-input-card");
+    card.id = `${playerIndex}-info-input-card`;
+    for (let i = 0; i < inputKeys.length; i++) {
+      const key = inputKeys[i];
+      const pair = LabelInputPair(key);
+      pair.label.htmlFor = `${playerIndex}-${inputKeys[i]}-input`;      
+      pair.input.id = `${playerIndex}-${inputKeys[i]}-input`;
+      switch (key) {
+        case "name":
+          pair.input.maxLength = 10;
+          break;
+        case "mark":
+          pair.input.maxLength = 1;
+          break;
+        default:
+          break;
+      }
+      card.append(pair.label, pair.input);
+    }
+    return card;
+  }
+
+  const PlayerInfoDisplayCard = (player) => {
+    const card = document.createElement("div");
+    card.classList.add("player-info-display-card");
+    for (let i = 0; i < player.getDisplayKeys().length; i++) {
+      const display = document.createElement("p");
+      const key = player.getDisplayKeys()[i];
+      display.classList.add(`${key}-display`);
+      switch (key) {
+        case "name":
+          display.innerText = player.getName();
+          break;
+        case "mark":
+          display.innerText = player.getMark();
+          break;
+        case "points":
+          display.innerText = player.getPoints();
+          break;
+        default:
+          break;
+      };
+      card.append(display);
+    }
+    return card;
+  }
+
+  return {
+    PlayerInfoInputCard,
+    PlayerInfoDisplayCard
+  }
+}
+
 (() => {
   const state = State();
+  const elements = Elements();
   state.initDefaultState();
-  state.takeTurn(0,0);
-  state.takeTurn(1,1);
-  state.takeTurn(0,1);
-  state.takeTurn(2,2);
-  state.takeTurn(0,2);
-  state.endRound();
-  state.takeTurn(1,1);
-  console.log(state.getBoard());
-  console.log(state.getMessage());
+  const players = state.getPlayers();
+  for (let i = 0; i < players.length; i++) {
+    const card = elements.PlayerInfoInputCard(players[i].getInputKeys(), i);
+    card.id = `${i}-info-input-card`;
+    document.getElementById("players").append(card);
+  };
+
+  const setPlayersButton = document.createElement("button");
+  setPlayersButton.innerText = "set players";
+  setPlayersButton.addEventListener("click", setPlayers);
+  document.body.append(setPlayersButton);
+
+  function setPlayers() {
+    const inputCards = document.getElementsByClassName("player-info-input-card");
+    for (let i = 0; i < inputCards.length; i++) {
+      const player = players[i];
+      const inputs = inputCards[i].getElementsByClassName("player-info-input");
+      player.setName(inputs[0].value);
+      player.setMark(inputs[1].value);
+    }
+    document.getElementById("players").innerHTML = "";
+    for (let i = 0; i < players.length; i++) {
+      document.getElementById("players").append(elements.PlayerInfoDisplayCard(players[i]));
+    }
+  };
+
 })();
