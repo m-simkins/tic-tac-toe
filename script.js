@@ -46,7 +46,7 @@ function State() {
     addPlayer: (player) => players.push(player),
     getActivePlayer: () => activePlayer,
     setActivePlayer: (player) => activePlayer = player,
-    switchActivePlayer: () => {
+    changeActivePlayer: () => {
       const index = players.indexOf(activePlayer)
       if (index === players.length - 1) {
         activePlayer = players[0];
@@ -63,7 +63,7 @@ function ticTacToe() {
 
   const state = State();
   const board = Board();
-  
+
   const takeTurn = (row, col) => {
     const activePlayer = state.getActivePlayer();
     if (board.getBoard()[row][col] === "") {
@@ -75,7 +75,7 @@ function ticTacToe() {
         state.setTurnResult("draw");
       } else {
         state.setTurnResult("");
-        state.switchActivePlayer();
+        state.changeActivePlayer();
       }
     } else {
       state.setTurnResult("invalid");
@@ -85,7 +85,7 @@ function ticTacToe() {
   const startNewRound = () => {
     board.clearBoard();
     state.setTurnResult("");
-    state.switchActivePlayer();
+    state.changeActivePlayer();
   }
 
   function checkWin(x, y) {
@@ -138,19 +138,26 @@ function ticTacToe() {
 };
 
 function Elements() {
+
+  const InputLabelPair = (inputName) => {
+    const label = document.createElement("label");
+    label.classList.add(`${inputName}-label`);
+    label.innerText = `${inputName}`;
+    const input = document.createElement("input");
+    input.classList.add(`${inputName}-input`);
+    input.name = `${inputName}`;
+    return {label, input}
+  }
+
   const PlayerInfoInputCard = (i) => {
     const card = document.createElement("div");
-    card.classList.add("player-name-input-card");
-    const label = document.createElement("label");
-    label.htmlFor = `${i}-name-input`;
-    label.innerText = "name";
-    const input = document.createElement("input");
-    input.type = "text";
-    input.id = `${i}-name-input`;
-    input.classList.add("player-name-input");
-    input.name = "name";
-    input.maxLength = 10;
-    card.append(label, input);
+    card.classList.add("info-input-card");
+    const namePair = InputLabelPair("name");
+    namePair.label.htmlFor = `${i}-name-input`;
+    namePair.input.type = "text";
+    namePair.input.id = `${i}-name-input`;
+    namePair.input.maxLength = 10;
+    card.append(namePair.label, namePair.input);
     return card;
   };
 
@@ -199,7 +206,7 @@ function Elements() {
 
   function startGame() {
     const playerInfoDisplay = document.getElementById("players");
-    const nameInputs = document.getElementsByClassName("player-name-input");
+    const nameInputs = document.getElementsByClassName("name-input");
     for (let i = 0; i < nameInputs.length; i++) game.getPlayers()[i].setName(nameInputs[i].value);
     playerInfoDisplay.innerHTML = "";
     game.getPlayers().forEach(player => playerInfoDisplay.append(Elements().PlayerInfoCard(player)));
@@ -285,7 +292,7 @@ function Elements() {
   function setUpPlayerNameInput() {
     for (let i = 0; i < game.getPlayers().length; i++) document.getElementById("players").append(Elements().PlayerInfoInputCard(i));
 
-    const nameInputs = document.getElementsByClassName("player-name-input");
+    const nameInputs = document.getElementsByClassName("name-input");
     for (let i = 0; i < nameInputs.length; i++) {
       nameInputs[i].addEventListener("blur", checkForAllNames);
       nameInputs[i].addEventListener("keyup", setEnterFocus);
@@ -294,7 +301,7 @@ function Elements() {
 
   function checkForAllNames() {
     const names = [];
-    const inputs = document.getElementsByClassName("player-name-input");
+    const inputs = document.getElementsByClassName("name-input");
     for (let i = 0; i < inputs.length; i++) names.push(inputs[i].value);
     if (names.every(name => name !== "")) document.getElementById("start-game-button").disabled = false;
   }
@@ -305,12 +312,11 @@ function Elements() {
         e.target.blur();
         document.getElementById("start-game-button").focus();
       } else {
-        const inputs = document.getElementsByClassName("player-name-input")
+        const inputs = document.getElementsByClassName("name-input")
         const index = Array.from(inputs).indexOf(e.target);
         inputs[index + 1].focus();
       }
     }
   }
-
 
 })();

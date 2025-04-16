@@ -24,7 +24,7 @@ body {
   justify-content: space-evenly;
 }
 
-.player-name-input-card, .player-info-card {
+.info-input-card, .player-info-card {
   display: flex;
   flex-direction: column;
 }
