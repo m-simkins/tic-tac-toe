@@ -18,7 +18,6 @@ function Board() {
   return {
     buildBoard: (rows, cols) => {
       if (!cols) cols = rows;
-      console.log(rows, cols);
       for (let i = 0; i < rows; i++) {
         const row = [];
         for (let j = 0; j < cols; j++) row.push("");
@@ -122,14 +121,8 @@ function ticTacToe() {
     getActivePlayer: state.getActivePlayer,
     setActivePlayer: state.setActivePlayer,
     setUpGame: () => {
-      const marks = ["X", "O"];
-      marks.forEach(mark => {
-        const player = Player();
-        state.addPlayer(player);
-        player.setMark(mark);
-        player.clearPoints();
-      });
-      board.buildSquareBoard(state.getPlayers().length + 1);
+      state.getPlayers().forEach(player => player.clearPoints());
+      board.buildBoard(state.getPlayers().length + 1);
       state.setActivePlayer(state.getPlayers()[0]);
     },
     takeTurn,
@@ -152,16 +145,28 @@ function Elements() {
   const PlayerInfoInputCard = (i) => {
     const card = document.createElement("div");
     card.classList.add("info-input-card");
-    const namePair = InputLabelPair("name");
-    namePair.label.htmlFor = `${i}-name-input`;
-    namePair.input.type = "text";
-    namePair.input.id = `${i}-name-input`;
-    namePair.input.maxLength = 10;
-    card.append(namePair.label, namePair.input);
+    card.id = `${i}-info-input-card`;
+    const info = ["name", "mark"];
+    for (let j = 0; j < info.length; j++) {
+      const pair = InputLabelPair(info[j]);
+      pair.label.htmlFor = `${i}-${info[j]}-input`;
+      pair.input.id = `${i}-${info[j]}-input`;
+      switch (info[j]) {
+        case "name":
+          pair.input.maxLength = 10;
+          break;
+        case "mark":
+          pair.input.maxLength = 1;
+          break;
+        default:
+          break;
+      }
+      card.append(pair.label, pair.input);
+    }
     return card;
   };
 
-  const PlayerInfoCard = (player) => {
+  const PlayerInfoDisplayCard = (player) => {
     const card = document.createElement("div");
     const name = document.createElement("p");
     name.innerText = `${player.getName()}`;
@@ -193,130 +198,5 @@ function Elements() {
     return container;
   };
   
-  return { PlayerInfoInputCard, PlayerInfoCard, BoardContainer }
+  return { PlayerInfoInputCard, PlayerInfoDisplayCard, BoardContainer }
 };
-
-// (() => {
-
-//   let game;
-
-//   document.getElementById("game-selector").addEventListener("change", selectGame);
-
-//   document.getElementById("start-game-button").addEventListener("click", startGame);
-
-//   function startGame() {
-//     const playerInfoDisplay = document.getElementById("players");
-//     const nameInputs = document.getElementsByClassName("name-input");
-//     for (let i = 0; i < nameInputs.length; i++) game.getPlayers()[i].setName(nameInputs[i].value);
-//     playerInfoDisplay.innerHTML = "";
-//     game.getPlayers().forEach(player => playerInfoDisplay.append(Elements().PlayerInfoCard(player)));
-//     buildBoard();
-//     setMessage();
-//   }
-
-//   function buildBoard() {
-//     const boardContainer = document.getElementById("board");
-//     const board = Elements().BoardContainer(game.getBoard());
-//     boardContainer.append(board);
-//     board.addEventListener("click", takeTurn);
-//   }
-
-//   function takeTurn(e) {
-//     const row = e.target.dataset.row;
-//     const col = e.target.dataset.col;
-//     game.takeTurn(row, col);
-//     e.target.innerText = game.getBoard()[row][col];
-//     setMessage();
-//     if (game.getTurnResult() === "win" || game.getTurnResult() === "draw") setUpRestart();
-//   }
-
-//   function setUpRestart() {
-//     const scoreDisplays = document.getElementsByClassName("points-display");
-//     for (let i = 0; i < game.getPlayers().length; i++) {
-//       scoreDisplays[i].innerText = `${game.getPlayers()[i].getPoints()}`;
-//     }
-    
-//     const boardButtons = document.getElementsByClassName("board-button");
-//     for (let i = 0; i < boardButtons.length; i++) {
-//       boardButtons[i].disabled = true;
-//     }
-
-//     const playAgainButton = document.createElement("button");
-//     playAgainButton.id = "play-again-button"
-//     playAgainButton.innerText = "play again";
-//     document.getElementById("setup").append(playAgainButton);
-//     playAgainButton.addEventListener("click", playAnotherRound);
-//   }
-
-//   function playAnotherRound() {
-//     const boardButtons = document.getElementsByClassName("board-button");
-//     for (let i = 0; i < boardButtons.length; i++) {
-//       boardButtons[i].innerText = "";
-//       boardButtons[i].disabled = false;
-//     }
-//     game.startNewRound();
-//     setMessage();
-//     document.getElementById("play-again-button").remove();
-//   }
-
-//   function setMessage() {
-//     let message;
-//     switch (game.getTurnResult()) {
-//       case "win":
-//         message = `${game.getActivePlayer().getName()} wins`
-//         break;
-//       case "draw":
-//         message = "it's a draw"
-//         break;
-//       case "invalid":
-//         message = "you can't do that! try again"
-//       default:
-//         message = `it's ${game.getActivePlayer().getName()}'s turn`
-//         break;
-//     }
-//     document.getElementById("message").innerText = message;
-//   }
-
-//   function selectGame(e) {
-//     switch (e.target.value) {
-//       case "tic-tac-toe":
-//         game = ticTacToe();
-//         break;
-//       default:
-//         break;
-//     }
-//     game.setUpGame();
-//     setUpPlayerNameInput();
-//   }
-  
-//   function setUpPlayerNameInput() {
-//     for (let i = 0; i < game.getPlayers().length; i++) document.getElementById("players").append(Elements().PlayerInfoInputCard(i));
-
-//     const nameInputs = document.getElementsByClassName("name-input");
-//     for (let i = 0; i < nameInputs.length; i++) {
-//       nameInputs[i].addEventListener("blur", checkForAllNames);
-//       nameInputs[i].addEventListener("keyup", setEnterFocus);
-//     };
-//   }
-
-//   function checkForAllNames() {
-//     const names = [];
-//     const inputs = document.getElementsByClassName("name-input");
-//     for (let i = 0; i < inputs.length; i++) names.push(inputs[i].value);
-//     if (names.every(name => name !== "")) document.getElementById("start-game-button").disabled = false;
-//   }
-
-//   function setEnterFocus(e) {
-//     if (e.key === "Enter") {
-//       if (document.getElementById("players").lastElementChild === e.target.parentElement) {
-//         e.target.blur();
-//         document.getElementById("start-game-button").focus();
-//       } else {
-//         const inputs = document.getElementsByClassName("name-input")
-//         const index = Array.from(inputs).indexOf(e.target);
-//         inputs[index + 1].focus();
-//       }
-//     }
-//   }
-
-// })();
