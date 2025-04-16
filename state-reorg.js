@@ -1,11 +1,5 @@
 function Player() {
-
-  const player = {
-    name: "",
-    mark: "",
-    points: 0
-  }
-
+  const player = { name: "", mark: "", points: 0, active: false }
   return {
     setName: (newName) => player.name = newName,
     getName: () => player.name,
@@ -15,7 +9,9 @@ function Player() {
     addPoint: () => player.points++,
     losePoint: () => player.points--,
     getPoints: () => player.points,
-    getInfoKeys : () => (Object.keys(player))
+    isActive: () => player.active,
+    toggleActive: () => player.active = !player.active,
+    getPlayerKeys: () => (Object.keys(player)),
   }
 };
 
@@ -33,89 +29,59 @@ function Board() {
       }
     },
     getBoard: () => board,
-    markBoard: (x, y, mark) => board[x][y] = mark,
+    markBoard: (row, col, mark) => board[row][col] = mark,
     clearBoard: () => {
-      for (let x = 0; x < board.length; x++) {
-        for (let y = 0; y < board[x].length; y++) board[x][y] = "";
+      for (let row = 0; row < board.length; row++) {
+        for (let col = 0; col < row.length; col++) board[row][col] = "";
       }
     }
   };
 };
 
-function State() {
+function ticTacToe() {
 
-  const players = [];
-  let activePlayer = players[0];
-  let turnResult;
-
-  return {
-    getPlayers: () => players,
-    addPlayer: (player) => players.push(player),
-    getActivePlayer: () => activePlayer,
-    setActivePlayer: (player) => activePlayer = player,
-    changeActivePlayer: () => {
-      const index = players.indexOf(activePlayer)
-      if (index === players.length - 1) {
-        activePlayer = players[0];
-      } else {
-        activePlayer = players[index + 1];
-      };
-    },
-    getTurnResult: () => turnResult,
-    setTurnResult: (result) => turnResult = result
-  }
-};
-
-function ticTacToe(state) {
-
+  const defaultMarks = ["X", "O"];
   const board = Board();
+  const buildBoard = (players) => board.buildBoard(players.length + 1);
   let message;
-  const isAValidMove = (row, col) => board.getBoard()[row][col] === "";
-  function resolveTurn(row, col) {
-    if (checkWin(row, col)) {
-      state.getActivePlayer().addPoint();
-      state.setTurnResult("win");
-    } else if (checkDraw()) {
-      state.setTurnResult("draw");
+  const takeTurn = (row, col, player) => {
+    if (isAValidMove(row, col)) {
+      board.markBoard(row, col, player.getMark());
+      return resolveTurn(row, col, player);
     } else {
-      state.setTurnResult("");
-      state.changeActivePlayer();
+      return "invalid";
     }
   };
-  function setMessage() {
-    const activePlayer = state.getActivePlayer();
-    switch (state.getTurnResult()) {
-      case "win":
-        message = `${activePlayer.getName()} wins! play again?`;
-        break;
-      case "draw":
-        message = "it's a draw. play again?";
-        break;
-      case "invalid":
-        message = "you can't do that! try again";
-      default:
-        message = `it's ${activePlayer.getName()}'s turn`;
-        break;
-    };
-  };
-  function checkWin(x, y) {
-    const row = board.getBoard()[x];
-    const col = [];
-    const ltr = [];
-    const rtl = [];
-    for (let i = 0; i < board.getBoard().length; i++) {
-      col.push(board.getBoard()[i][y]);
-      ltr.push(board.getBoard()[i][i]);
-      rtl.push(board.getBoard()[i][board.getBoard().length - 1 - i]);
+  const isAValidMove = (row, col) => board.getBoard()[row][col] === "";
+  function resolveTurn(row, col, player) {
+    if (playerWinsRound(row, col, player)) {
+      player.addPoint();
+      message = `${player.getName()} wins! play again?`
+      return "win";
+    } else if (boardIsFull()) {
+      message = "it's a draw. play again?"
+      return "draw";
+    } else {
+      return "";
     }
-    const lines = [row, col, ltr, rtl];
-    const checks = [];
-    lines.forEach((line) => {
-      checks.push(line.every((mark) => mark === state.getActivePlayer().getMark()));
+  };
+  function playerWinsRound(row, col, player) {
+    const playerMark = player.getMark();
+    const boardArr = board.getBoard();
+    const checkedLines = [[],[],[],[]];
+    const isAWinner = [];
+    for (let i = 0; i < boardArr.length; i++) {
+      checkedLines[0].push(boardArr[row][i]);
+      checkedLines[1].push(boardArr[i][col]);
+      checkedLines[2].push(boardArr[i][i]);
+      checkedLines[3].push(boardArr[i][boardArr.length - 1 - i]);
+    }
+    checkedLines.forEach((line) => {
+      isAWinner.push(line.every((mark) => mark === playerMark));
     })
-    return checks.indexOf(true) !== -1
+    return isAWinner.indexOf(true) !== -1
   };
-  function checkDraw() {
+  function boardIsFull() {
     const checks = [];
     board.getBoard().forEach((row) => checks.push(row.every((mark) => mark !== "")));
     return checks.every((check) => check === true);
@@ -123,100 +89,80 @@ function ticTacToe(state) {
 
   return {
     getBoard: board.getBoard,
-    markBoard: board.markBoard,
     clearBoard: board.clearBoard,
-    setUpGame: () => {
-      state.getPlayers().forEach(player => player.clearPoints());
-      board.buildBoard(state.getPlayers().length + 1);
-      state.setActivePlayer(state.getPlayers()[0]);
+    buildBoard,
+    takeTurn,
+    getMessage: () => message,
+    setMessage: (newMessage) => message = newMessage,
+    getDefaultMarks: () => defaultMarks,
+  }
+
+};
+
+function State() {
+  const defaultGame = ticTacToe();
+  let game = defaultGame;
+
+  const players = [];
+  const defaultMarks = defaultGame.getDefaultMarks();
+
+  const board = game.getBoard();
+  let turnResult = "";
+  let activePlayer;
+  function changeActivePlayer() {
+    const index = players.indexOf(activePlayer);
+    activePlayer.toggleActive();
+    activePlayer = index === players.length - 1 ? players[0] : players[index + 1];
+    activePlayer.toggleActive();
+  };
+  function setDefaultPlayers() {
+    defaultMarks.forEach((mark) => {
+      const player = Player();
+      player.setName(`player ${mark}`);
+      player.setMark(mark);
+      players.push(player);
+    });  
+  };
+  const message = game.getMessage();
+  function startNextTurn() {
+    changeActivePlayer();
+    game.setMessage(`it's ${activePlayer.getName()}'s turn`);
+  }
+  
+
+  return {
+    getPlayers: () => players,
+    addPlayer: (player) => players.push(player),
+    getGame: () => game,
+    setGame: (chosenGame) => game = chosenGame,
+    getBoard: () => board,
+    getTurnResult: () => turnResult,
+    getMessage: () => message,
+    initDefaultState: () => {
+      game = defaultGame;
+      setDefaultPlayers();
+      game.buildBoard(players);
+      players[0].toggleActive();
+      activePlayer = players[0];
+      game.setMessage(`it's ${activePlayer.getName()}'s turn`);
     },
     takeTurn: (row, col) => {
-      if (isAValidMove(row, col)) {
-        board.markBoard(row, col, state.getActivePlayer().getMark());
-        resolveTurn(row, col);
-      } else {
-        state.setTurnResult("invalid");
-      }
-      setMessage();
+      turnResult = game.takeTurn(row, col, activePlayer);
+      if (turnResult === "") startNextTurn();
+      console.log(board, game.getMessage());
     },
-    getMessage: () => message,
     startNewRound: () => {
-      board.clearBoard();
-      state.setTurnResult("");
-      state.changeActivePlayer();
+      game.clearBoard();
+      startNextTurn();
     }
   }
 };
 
+// (() => {
+  const state = State();
+  state.initDefaultState();
+  state.takeTurn(1,1);
+  state.takeTurn(0,0);
+  state.takeTurn(1,0);
 
-function Elements() {
-
-  const InputLabelPair = (inputName) => {
-    const label = document.createElement("label");
-    label.classList.add(`${inputName}-label`);
-    label.innerText = `${inputName}`;
-    const input = document.createElement("input");
-    input.classList.add(`${inputName}-input`);
-    input.name = `${inputName}`;
-    return {label, input}
-  }
-
-  const PlayerInfoInputCard = (i) => {
-    const card = document.createElement("div");
-    card.classList.add("info-input-card");
-    card.id = `${i}-info-input-card`;
-    const info = ["name", "mark"];
-    for (let j = 0; j < info.length; j++) {
-      const pair = InputLabelPair(info[j]);
-      pair.label.htmlFor = `${i}-${info[j]}-input`;
-      pair.input.id = `${i}-${info[j]}-input`;
-      switch (info[j]) {
-        case "name":
-          pair.input.maxLength = 10;
-          break;
-        case "mark":
-          pair.input.maxLength = 1;
-          break;
-        default:
-          break;
-      }
-      card.append(pair.label, pair.input);
-    }
-    return card;
-  };
-
-  const PlayerInfoDisplayCard = (player) => {
-    const card = document.createElement("div");
-    const info = ["name", "mark", "points"];
-    const name = document.createElement("p");
-    name.innerText = `${player.getName()}`;
-    const mark = document.createElement("p");
-    mark.innerText = `${player.getMark()}`;
-    const points = document.createElement("p");
-    points.classList.add("points-display");
-    points.innerText = `${player.getPoints()}`;
-    card.append(name, mark, points);
-    return card;
-  };
-
-  const BoardContainer = (board) => {
-    const rowCount = board.length;
-    const colCount = board[0].length;
-    const container = document.createElement("div");
-    container.style.display = "grid";
-    container.style.gridTemplate = `repeat(${rowCount}, 1fr) / repeat(${colCount}, 1fr)`;
-    for (let i = 0; i < rowCount; i++) {
-      for (let j = 0; j < colCount; j++) {
-        const button = document.createElement("button");
-        button.dataset.row = `${i}`;
-        button.dataset.col = `${j}`;
-        button.innerText = board[i][j];
-        button.classList.add("board-button");
-        container.append(button);
-      }
-    }
-    return container;
-  };
-  
-  return { PlayerInfoInputCard, PlayerInfoDisplayCard, BoardContainer }
-};
+// })();
