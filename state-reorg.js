@@ -31,8 +31,11 @@ function Board() {
     getBoard: () => board,
     markBoard: (row, col, mark) => board[row][col] = mark,
     clearBoard: () => {
-      for (let row = 0; row < board.length; row++) {
-        for (let col = 0; col < row.length; col++) board[row][col] = "";
+      for (let i = 0; i < board.length; i++) {
+        const newRow = [];
+        for (let j = 0; j < board[i].length; j++) newRow.push("");
+        board.shift();
+        board.push(newRow);        
       }
     }
   };
@@ -42,16 +45,8 @@ function ticTacToe() {
 
   const defaultMarks = ["X", "O"];
   const board = Board();
-  const buildBoard = (players) => board.buildBoard(players.length + 1);
   let message;
-  const takeTurn = (row, col, player) => {
-    if (isAValidMove(row, col)) {
-      board.markBoard(row, col, player.getMark());
-      return resolveTurn(row, col, player);
-    } else {
-      return "invalid";
-    }
-  };
+
   const isAValidMove = (row, col) => board.getBoard()[row][col] === "";
   function resolveTurn(row, col, player) {
     if (playerWinsRound(row, col, player)) {
@@ -88,13 +83,20 @@ function ticTacToe() {
   };
 
   return {
+    getDefaultMarks: () => defaultMarks,
     getBoard: board.getBoard,
     clearBoard: board.clearBoard,
-    buildBoard,
-    takeTurn,
+    buildBoard: (players) => board.buildBoard(players.length + 1),
+    takeTurn: (row, col, player) => {
+      if (isAValidMove(row, col)) {
+        board.markBoard(row, col, player.getMark());
+        return resolveTurn(row, col, player);
+      } else {
+        return "invalid";
+      }
+    },
     getMessage: () => message,
     setMessage: (newMessage) => message = newMessage,
-    getDefaultMarks: () => defaultMarks,
   }
 
 };
@@ -114,7 +116,7 @@ function State() {
     activePlayer.toggleActive();
   }
 
-  function setDefaultPlayers() {
+  function setPlayerDefaults() {
     defaultMarks.forEach((mark) => {
       const player = Player();
       player.setName(`player ${mark}`);
@@ -129,7 +131,6 @@ function State() {
     game.setMessage(`it's ${activePlayer.getName()}'s turn`);
   }
   
-
   return {
     getPlayers: () => players,
     addPlayer: (player) => players.push(player),
@@ -141,7 +142,7 @@ function State() {
     getMessage: game.getMessage,
     initDefaultState: () => {
       game = defaultGame;
-      setDefaultPlayers();
+      setPlayerDefaults();
       game.buildBoard(players);
       game.setMessage(`it's ${activePlayer.getName()}'s turn`);
     },
@@ -151,8 +152,8 @@ function State() {
     },
     startNewRound: () => {
       game.clearBoard();
-      startNextTurn();
-    },
+      startNextTurn();  
+    }
   }
 };
 
@@ -162,10 +163,10 @@ function State() {
   state.takeTurn(0,0);
   state.takeTurn(1,1);
   state.takeTurn(0,1);
+  state.takeTurn(2,2);
   state.takeTurn(0,2);
-  state.takeTurn(1,0);
-  state.takeTurn(2,0);
-  console.log(state.getMessage());
+  state.endRound();
+  state.takeTurn(1,1);
   console.log(state.getBoard());
-
+  console.log(state.getMessage());
 })();
