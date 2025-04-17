@@ -44,7 +44,6 @@ function ticTacToe() {
   function resolveTurn(row, col, player) {
     if (playerWinsRound(row, col, player)) {
       player.addPoint();
-      console.log(player.getValue("name"), player.getValue("points"));
       message = `${player.getValue("name")} wins! play again?`
       return "win";
     } else if (boardIsFull()) {
@@ -238,7 +237,8 @@ function Listeners() {
     const col = e.target.dataset.col;
     state.takeTurn(row, col);
     e.target.innerText = board[row][col];
-    if (state.getTurnResult() === "win") endRound();
+    const turnResult = state.getTurnResult();
+    if (turnResult === "win" || turnResult === "draw") endRound();
     document.getElementById("message").innerText = state.getMessage();
   }
 
