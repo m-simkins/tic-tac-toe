@@ -90,6 +90,7 @@ function Elements() {
 function Listeners() {
   const state = State();
   const players = state.getPlayers();
+  const elem = Elements();
 
   function savePlayers() {
     const inputCards = Array.from(document.getElementsByClassName("player-input-card"));
@@ -98,14 +99,35 @@ function Listeners() {
       const inputs = Array.from(card.getElementsByTagName("input"));
       inputs.forEach(input => {
         player.setValue(input.name, input.value);
-      })
-      console.log(player.getEntries());
-    })
+      });
+    });
+    setUpGameDisplay();
+  };
+
+  function setUpGameDisplay() {
+    document.getElementById("start-game-button").style.display = "inline-block";
+    document.getElementById("start-game-button").focus();
+    document.getElementById("save-players-button").style.display = "none";
+    displayPlayers();
   }
+
+  function displayPlayers() {
+    const playersDisplay = document.getElementById("players");
+    playersDisplay.innerHTML = "";
+    players.forEach((player, index) => {
+      const card = elem.PlayerDisplayCard(player);
+      card.id = `${index}-display-card`;
+      playersDisplay.append(card);
+    });
+  }
+
+  function startGame() {
+  };
 
   return {
     getState: () => state,
     savePlayers,
+    startGame,
   }
 }
 
@@ -122,18 +144,11 @@ function Listeners() {
 
   const savePlayersButton = elem.SetupButton("save players");
   savePlayersButton.addEventListener("click", listen.savePlayers);
-  document.getElementById("setup").append(savePlayersButton);
 
-  // function savePlayers() {
-  //   const inputCards = Array.from(document.getElementsByClassName("player-input-card"));
-  //   inputCards.forEach((card, index) => {
-  //     const player = players[index];
-  //     const inputs = Array.from(card.getElementsByTagName("input"));
-  //     inputs.forEach(input => {
-  //       player.setValue(input.name, input.value);
-  //     })
-  //     console.log(player.getEntries());
-  //   })
-  // }
+  const startGameButton = elem.SetupButton("start game");
+  startGameButton.style.display = "none";
+  startGameButton.addEventListener("click", listen.startGame);
+
+  document.getElementById("setup").append(savePlayersButton, startGameButton);
 
 })();
