@@ -111,8 +111,8 @@ function State() {
   function setPlayerDefaults() {
     defaultMarks.forEach((mark) => {
       const player = Player();
-      player.setName(`player ${mark}`);
-      player.setMark(mark);
+      player.setValue("name",`player${mark}`);
+      player.setValue("mark",`${mark.toUpperCase()}`);
       players.push(player);
     });
     activePlayer = players[0];
@@ -136,7 +136,7 @@ function State() {
       game = defaultGame;
       setPlayerDefaults();
       game.buildBoard(players);
-      game.setMessage(`it's ${activePlayer.getName()}'s turn`);
+      game.setMessage(`it's ${activePlayer.getValue("name")}'s turn`);
     },
     takeTurn: (row, col) => {
       turnResult = game.takeTurn(row, col, activePlayer);
@@ -203,20 +203,68 @@ function Elements() {
   }
 };
 
-(() => {
+function Listeners() {
   const state = State();
+  const players = state.getPlayers();
   const elem = Elements();
+
+  function savePlayers() {
+    const inputCards = Array.from(document.getElementsByClassName("player-input-card"));
+    inputCards.forEach((card, index) => {
+      const player = players[index];
+      const inputs = Array.from(card.getElementsByTagName("input"));
+      inputs.forEach(input => {
+        player.setValue(input.name, input.value);
+      });
+    });
+    setUpGameDisplay();
+  };
+
+  function setUpGameDisplay() {
+    document.getElementById("start-game-button").style.display = "inline-block";
+    document.getElementById("start-game-button").focus();
+    document.getElementById("save-players-button").style.display = "none";
+    displayPlayers();
+  }
+
+  function displayPlayers() {
+    const playersDisplay = document.getElementById("players");
+    playersDisplay.innerHTML = "";
+    players.forEach((player, index) => {
+      const card = elem.PlayerDisplayCard(player);
+      card.id = `${index}-display-card`;
+      playersDisplay.append(card);
+    });
+  }
+
+  function startGame() {
+  };
+
+  return {
+    getState: () => state,
+    savePlayers,
+    startGame,
+  }
+}
+
+(() => {
+  const listen = Listeners();
+  const elem = Elements();
+  const state = listen.getState();
+  const players = state.getPlayers();
+
   state.initDefaultState();
 
-  const players = state.getPlayers();
-    const playersDisplay = document.getElementById("players");
+  const playersDisplay = document.getElementById("players");
   players.forEach(player => playersDisplay.append(elem.PlayerInputCard(player)));
 
+  const savePlayersButton = elem.SetupButton("save players");
+  savePlayersButton.addEventListener("click", listen.savePlayers);
+
   const startGameButton = elem.SetupButton("start game");
-  startGameButton.addEventListener("click", () => {
-    playersDisplay.innerHTML = "";
-    players.forEach(player => playersDisplay.append(elem.PlayerDisplayCard(player)));
-  })
-  document.getElementById("setup").append(startGameButton);
+  startGameButton.style.display = "none";
+  startGameButton.addEventListener("click", listen.startGame);
+
+  document.getElementById("setup").append(savePlayersButton, startGameButton);
 
 })();
