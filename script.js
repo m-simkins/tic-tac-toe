@@ -44,7 +44,7 @@ function ticTacToe() {
   function resolveTurn(row, col, player) {
     if (playerWinsRound(row, col, player)) {
       player.addPoint();
-      message = `${player.getName()} wins! play again?`
+      message = `${player.getValue("name")} wins! play again?`
       return "win";
     } else if (boardIsFull()) {
       message = "it's a draw. play again?"
@@ -54,7 +54,7 @@ function ticTacToe() {
     }
   };
   function playerWinsRound(row, col, player) {
-    const playerMark = player.getMark();
+    const playerMark = player.getValue("mark");
     const boardArr = board.getBoard();
     const checkedLines = [[],[],[],[]];
     const isAWinner = [];
@@ -81,7 +81,7 @@ function ticTacToe() {
     buildBoard: (players) => board.buildBoard(players.length + 1),
     takeTurn: (row, col, player) => {
       if (board.getBoard()[row][col] === "") {
-        board.markBoard(row, col, player.getMark());
+        board.markBoard(row, col, player.getValue("mark"));
         return resolveTurn(row, col, player);
       } else {
         return "invalid";
@@ -150,7 +150,7 @@ function State() {
 };
 
 function Elements() {
-  const LabelInputPair = (inputName) => {
+  function LabelInputPair(inputName) {
     const pair = document.createElement("div");
     pair.classList.add(`${inputName}-input-label-pair`, "input-label-pair");
     const label = document.createElement("label");
@@ -196,17 +196,38 @@ function Elements() {
     return button;
   }
 
+  const Board = (board) => {
+    const container = document.createElement("div");
+    container.id = "board";
+    for (let i = 0; i < board.length; i++) {
+
+      for (let j = 0; j < board[i].length; j++) {
+        const button = document.createElement("button");
+        button.classList.add("board-button");
+        button.dataset.row = [i];
+        button.dataset.col = [j];
+        button.innerText = board[i][j];
+        button.disabled = true;
+        container.append(button);
+      }
+    }
+    container.style.gridTemplateColumns = `repeat(${board[0].length}, 1fr)`;
+    return container;
+  }
+
   return {
     PlayerInputCard,
     PlayerDisplayCard,
-    SetupButton
+    SetupButton,
+    Board,
   }
 };
 
 function Listeners() {
+  const elem = Elements();
   const state = State();
   const players = state.getPlayers();
-  const elem = Elements();
+  const board = state.getBoard();
 
   function savePlayers() {
     const inputCards = Array.from(document.getElementsByClassName("player-input-card"));
@@ -219,12 +240,19 @@ function Listeners() {
     });
     setUpGameDisplay();
   };
+  
+  function startGame() {
+    const boardButtons = Array.from(document.getElementsByClassName("board-button"));
+    boardButtons.forEach(button => button.disabled = false);
+    document.getElementById("message").innerText = state.getMessage();
+  }
 
   function setUpGameDisplay() {
+    document.getElementById("save-players-button").style.display = "none";
     document.getElementById("start-game-button").style.display = "inline-block";
     document.getElementById("start-game-button").focus();
-    document.getElementById("save-players-button").style.display = "none";
     displayPlayers();
+    document.body.append(elem.Board(board));
   }
 
   function displayPlayers() {
@@ -237,13 +265,10 @@ function Listeners() {
     });
   }
 
-  function startGame() {
-  };
-
   return {
     getState: () => state,
     savePlayers,
-    startGame,
+    startGame
   }
 }
 
