@@ -87,20 +87,53 @@ function Elements() {
   }
 };
 
-(() => {
+function Listeners() {
   const state = State();
+  const players = state.getPlayers();
+
+  function savePlayers() {
+    const inputCards = Array.from(document.getElementsByClassName("player-input-card"));
+    inputCards.forEach((card, index) => {
+      const player = players[index];
+      const inputs = Array.from(card.getElementsByTagName("input"));
+      inputs.forEach(input => {
+        player.setValue(input.name, input.value);
+      })
+      console.log(player.getEntries());
+    })
+  }
+
+  return {
+    getState: () => state,
+    savePlayers,
+  }
+}
+
+(() => {
+  const listen = Listeners();
   const elem = Elements();
+  const state = listen.getState();
+  const players = state.getPlayers();
+
   state.initDefaultState();
 
-  const players = state.getPlayers();
-    const playersDisplay = document.getElementById("players");
+  const playersDisplay = document.getElementById("players");
   players.forEach(player => playersDisplay.append(elem.PlayerInputCard(player)));
 
-  const startGameButton = elem.SetupButton("start game");
-  startGameButton.addEventListener("click", () => {
-    playersDisplay.innerHTML = "";
-    players.forEach(player => playersDisplay.append(elem.PlayerDisplayCard(player)));
-  })
-  document.getElementById("setup").append(startGameButton);
+  const savePlayersButton = elem.SetupButton("save players");
+  savePlayersButton.addEventListener("click", listen.savePlayers);
+  document.getElementById("setup").append(savePlayersButton);
+
+  // function savePlayers() {
+  //   const inputCards = Array.from(document.getElementsByClassName("player-input-card"));
+  //   inputCards.forEach((card, index) => {
+  //     const player = players[index];
+  //     const inputs = Array.from(card.getElementsByTagName("input"));
+  //     inputs.forEach(input => {
+  //       player.setValue(input.name, input.value);
+  //     })
+  //     console.log(player.getEntries());
+  //   })
+  // }
 
 })();
