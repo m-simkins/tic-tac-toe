@@ -44,6 +44,7 @@ function ticTacToe() {
   function resolveTurn(row, col, player) {
     if (playerWinsRound(row, col, player)) {
       player.addPoint();
+      console.log(player.getValue("name"), player.getValue("points"));
       message = `${player.getValue("name")} wins! play again?`
       return "win";
     } else if (boardIsFull()) {
@@ -115,17 +116,17 @@ function State() {
       player.setValue("mark",`${mark.toUpperCase()}`);
       players.push(player);
     });
-    activePlayer = players[0];
   };
 
   function startNextTurn() {
     changeActivePlayer();
-    game.setMessage(`it's ${activePlayer.getName()}'s turn`);
+    game.setMessage(`it's ${activePlayer.getValue("name")}'s turn`);
   }
   
   return {
     getPlayers: () => players,
     addPlayer: (player) => players.push(player),
+    resetPlayers: () => players.length = 0,
     getActivePlayer: () => activePlayer,
     getGame: () => game,
     setGame: (chosenGame) => game = chosenGame,
@@ -136,6 +137,9 @@ function State() {
       game = defaultGame;
       setPlayerDefaults();
       game.buildBoard(players);
+    },
+    startGame : () => {
+      activePlayer = players[0];
       game.setMessage(`it's ${activePlayer.getValue("name")}'s turn`);
     },
     takeTurn: (row, col) => {
@@ -228,28 +232,64 @@ function Listeners() {
   const state = State();
   const players = state.getPlayers();
   const board = state.getBoard();
+  
+  const takeTurn = (e) => {
+    const row = e.target.dataset.row;
+    const col = e.target.dataset.col;
+    state.takeTurn(row, col);
+    e.target.innerText = board[row][col];
+    if (state.getTurnResult() === "win") endRound();
+    document.getElementById("message").innerText = state.getMessage();
+  }
 
-  function savePlayers() {
+  function endRound() {
+    const playAgainButton = elem.SetupButton("play again");
+    playAgainButton.addEventListener("click", playAgain);  
+    document.getElementById("setup").append(playAgainButton);
+    document.getElementById("play-again-button").focus();
+    const pointsDisplays = Array.from(document.getElementsByClassName("points-display"));
+    pointsDisplays.forEach((display, index) => display.innerText = `${players[index].getValue("points")}`);
+  }
+
+  const savePlayers = () => {
+    state.resetPlayers();
     const inputCards = Array.from(document.getElementsByClassName("player-input-card"));
-    inputCards.forEach((card, index) => {
-      const player = players[index];
+    inputCards.forEach((card) => {
+      const player = Player();
       const inputs = Array.from(card.getElementsByTagName("input"));
       inputs.forEach(input => {
         player.setValue(input.name, input.value);
       });
+      state.addPlayer(player);
     });
-    setUpGameDisplay();
+    setUpDisplay();
   };
   
-  function startGame() {
-    const boardButtons = Array.from(document.getElementsByClassName("board-button"));
-    boardButtons.forEach(button => button.disabled = false);
+  const startGame = (e) => {
+    state.startGame();
+    Array.from(document.getElementsByClassName("board-button")).forEach(button => {
+      button.disabled = false
+      button.addEventListener("click", takeTurn);
+    });
     document.getElementById("message").innerText = state.getMessage();
+    e.target.remove();
   }
 
-  function setUpGameDisplay() {
-    document.getElementById("save-players-button").style.display = "none";
-    document.getElementById("start-game-button").style.display = "inline-block";
+  const playAgain = (e) => {
+    state.startNewRound();
+    const boardButtons = Array.from(document.getElementsByClassName("board-button"));
+    boardButtons.forEach(button => {
+      button.innerText = "";
+    });
+    document.getElementById("message").innerText = state.getMessage();
+    e.target.remove();
+  }
+
+  function setUpDisplay() {
+    document.getElementById("save-players-button").remove();
+    const startGameButton = elem.SetupButton("start game");
+    startGameButton.addEventListener("click", startGame);  
+    document.getElementById("setup").append(startGameButton);
     document.getElementById("start-game-button").focus();
     displayPlayers();
     document.body.append(elem.Board(board));
@@ -268,7 +308,9 @@ function Listeners() {
   return {
     getState: () => state,
     savePlayers,
-    startGame
+    startGame,
+    takeTurn,
+    playAgain,
   }
 }
 
@@ -286,10 +328,6 @@ function Listeners() {
   const savePlayersButton = elem.SetupButton("save players");
   savePlayersButton.addEventListener("click", listen.savePlayers);
 
-  const startGameButton = elem.SetupButton("start game");
-  startGameButton.style.display = "none";
-  startGameButton.addEventListener("click", listen.startGame);
-
-  document.getElementById("setup").append(savePlayersButton, startGameButton);
+  document.getElementById("setup").append(savePlayersButton);
 
 })();
