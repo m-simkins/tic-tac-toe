@@ -84,6 +84,7 @@ function ticTacToe() {
         board.markBoard(row, col, player.getValue("mark"));
         return resolveTurn(row, col, player);
       } else {
+        message = "you can't do that! try again";
         return "invalid";
       }
     },
